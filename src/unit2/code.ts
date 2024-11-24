@@ -1,7 +1,10 @@
 import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
 
-const { scene, render } = createBaseScene();
+const { scene, render } = createBaseScene({
+    sceneTitle: "Unit 2: Polygon with 5 vertices",
+    cameraZ: 20,
+});
 
 const geometry = new THREE.BufferGeometry();
 // prettier-ignore
@@ -23,8 +26,17 @@ geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 geometry.setIndex(indices);
 geometry.computeVertexNormals();
 
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
-const pentagon = new THREE.Mesh(geometry, material);
-scene.add(pentagon);
+const material = new THREE.MeshBasicMaterial({
+    color: 0xff0000,
+    side: THREE.DoubleSide,
+});
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
 
-render();
+const animate = () => {
+    requestAnimationFrame(animate);
+    mesh.rotation.y += 0.01;
+    render();
+};
+
+animate();
