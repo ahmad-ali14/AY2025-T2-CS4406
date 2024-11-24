@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
 
-const { scene, render } = createBaseScene({
+const { scene, render, addHelpNote } = createBaseScene({
     sceneTitle: "Unit 2: Polygon with 5 vertices",
     cameraZ: 20,
 });
@@ -40,3 +40,12 @@ const animate = () => {
 };
 
 animate();
+
+addHelpNote({
+    title: "Unit 2: Polygon with 5 vertices",
+    description: "This is a polygon with 5 vertices. It is a pentagon.",
+    points: [
+        "The vertices are at the top, top-right, bottom-right, bottom-left, and top-left.",
+        "The sides are red and the polygon is rotating.",
+    ],
+});

@@ -1,6 +1,22 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
+type HelpNote = {
+    title: string;
+    description: string;
+    points: string[];
+};
+const defaultHelpNote: HelpNote = {
+    title: "Controls Options Help",
+    description:
+        "This section adds extra functionality to control the scene including grid, axes, mouse controls, and zoom.",
+    points: [
+        "Use Orbit Controls to navigate the scene (pan, zoom, rotate).",
+        "Toggle grid and axes helpers using the sidebar options.",
+        "Modify the camera's position or other properties in the code.",
+    ],
+};
+
 type CreateBaseSceneParams = {
     canvasId?: string;
     sceneTitle: string;
@@ -55,7 +71,7 @@ export const createBaseScene = (
 
     const sidebar = document.createElement("div");
     sidebar.classList.add(
-        "md:w-[20%]",
+        "w-[20%]",
         "h-window",
         "bg-gray-200",
         "overflow-auto",
@@ -142,9 +158,51 @@ export const createBaseScene = (
         controls.enabled = useOrbitControls.checked;
     });
 
+    // help modal
+    const helpNotes: HelpNote[] = [defaultHelpNote];
+    const helpModal = document.createElement("div");
+    helpModal.id = "helpModal";
+    helpModal.classList.add(
+        "fixed",
+        "top-0",
+        "left-0",
+        "w-full",
+        "h-full",
+        "bg-black",
+        "bg-opacity-50",
+        "flex",
+        "items-center",
+        "justify-center",
+        "hidden", // Initially hidden
+    );
+
+    const modalContentWrapper = document.createElement("div");
+    modalContentWrapper.classList.add(
+        "bg-white",
+        "p-6",
+        "rounded-lg",
+        "shadow-lg",
+        "text-center",
+        "max-w-5xl",
+        "w-full",
+    );
+    modalContentWrapper.innerHTML = `
+      <div id="helpModalContent" class="w-full"></div>
+      <button id="closeHelp" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Close</button>
+    `;
+
+    helpModal.appendChild(modalContentWrapper);
+    document.body.appendChild(helpModal);
+
+    // Close modal event listener
+    const closeModalButton = modalContentWrapper.querySelector("#closeHelp");
+    closeModalButton?.addEventListener("click", () => {
+        helpModal.classList.add("hidden");
+    });
+
+    // help button
     const helpDiv = document.createElement("div");
-    helpDiv.classList.add("text-center");
-    helpDiv.innerHTML = `<div>
+    helpDiv.innerHTML = `<div class="flex absolute bottom-1 w-full max-w-[18%]">
     <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full">
        ? Help
     </button>
@@ -153,7 +211,36 @@ export const createBaseScene = (
         //TODO: open help modal
     });
     sidebar.appendChild(helpDiv);
-    helpDiv.classList.add("absolute", "bottom-1", "w-72", "text-center");
+    helpDiv.addEventListener("click", () => {
+        const modalContent =
+            modalContentWrapper.querySelector("#helpModalContent");
+        if (!modalContent) {
+            throw new Error("Modal content not found");
+        }
+        modalContent.innerHTML = helpNotes
+            .map((hp) => {
+                const { title, points, description } = hp;
+                return `
+                <div class="mb-5">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-1">${title}</h2>
+                    ${
+                        description
+                            ? `<p class="mb-2 text-left">${description}</p>`
+                            : ""
+                    }
+                    <ul class="text-left mb-4 list-disc pl-6">
+                    ${points.map((point) => `<li>${point}</li>`).join("")}
+                    </ul>
+                </div>
+            `;
+            })
+            .join(" ");
+        helpModal.classList.remove("hidden"); // Show the modal
+    });
+
+    const addHelpNote = (helpNote: HelpNote) => {
+        helpNotes.push(helpNote);
+    };
 
     return {
         canvas,
@@ -163,5 +250,6 @@ export const createBaseScene = (
         render: () => {
             renderer.render(scene, camera);
         },
+        addHelpNote,
     };
 };
