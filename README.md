@@ -3,7 +3,15 @@
 This repository contains assignments for the course CS4406 - Computer Graphics, year 2025, term 2, at the
 University of the People (UoPeople) done by the student Ahmad Ali.
 
-Note: The repository will be deleted after the course ends.
+## Notes
+
+- The repository is organized into directories, one for each unit.
+- The repository will be deleted after the course ends.
+- We will be using the latest version of Three.js for the assignments `v0.170`.
+- The assignments base is broken because of the new version of Three.js, so I will update the base code to work
+  with the new version.
+
+---
 
 ## Assignments
 
