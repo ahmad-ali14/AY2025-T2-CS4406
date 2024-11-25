@@ -88,6 +88,8 @@ export const createBaseScene = (
 
     const shouldShowHelpers = true;
     const shouldUseOrbitControls = true;
+    let shouldShowWireframe = false;
+    let shouldShowLabels = true;
 
     // Add a grid to the scene
     const gridHelper = new THREE.GridHelper(1000, 1000);
@@ -132,6 +134,14 @@ export const createBaseScene = (
         <input type="checkbox" id="useOrbitControls" checked>
         <label for="useOrbitControls" class="font-bold">Use Orbit Controls</label>
       </div>
+      <div>
+       <input type="checkbox" id="showWireframe">
+         <label for="showWireframe" class="font-bold">Show Wireframe</label>
+     </div>
+     <div>
+         <input type="checkbox" id="showLabels">
+         <label for="showLabels" class="font-bold">Show Labels</label>
+        </div>
     </div>  
     `;
     sidebar.appendChild(controlOptionsDiv);
@@ -141,10 +151,18 @@ export const createBaseScene = (
     const useOrbitControls = document.getElementById(
         "useOrbitControls",
     ) as HTMLInputElement;
+    const showWireframe = document.getElementById(
+        "showWireframe",
+    ) as HTMLInputElement;
+    const showLabels = document.getElementById(
+        "showLabels",
+    ) as HTMLInputElement;
 
     showGrid.checked = shouldShowHelpers;
     showAxes.checked = shouldShowHelpers;
     useOrbitControls.checked = shouldUseOrbitControls;
+    showWireframe.checked = shouldShowWireframe;
+    showLabels.checked = shouldShowLabels;
 
     showGrid.addEventListener("change", () => {
         gridHelper.visible = showGrid.checked;
@@ -156,6 +174,14 @@ export const createBaseScene = (
 
     useOrbitControls.addEventListener("change", () => {
         controls.enabled = useOrbitControls.checked;
+    });
+
+    showWireframe.addEventListener("change", () => {
+        shouldShowWireframe = showWireframe.checked;
+    });
+
+    showLabels.addEventListener("change", () => {
+        shouldShowLabels = showLabels.checked;
     });
 
     // help modal
@@ -207,9 +233,6 @@ export const createBaseScene = (
        ? Help
     </button>
     </div>`;
-    helpDiv.addEventListener("click", () => {
-        //TODO: open help modal
-    });
     sidebar.appendChild(helpDiv);
     helpDiv.addEventListener("click", () => {
         const modalContent =
@@ -251,5 +274,7 @@ export const createBaseScene = (
             renderer.render(scene, camera);
         },
         addHelpNote,
+        shouldShowWireframe: () => shouldShowWireframe,
+        shouldShowLabels: () => shouldShowLabels,
     };
 };
