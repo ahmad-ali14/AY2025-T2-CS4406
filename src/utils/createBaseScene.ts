@@ -276,5 +276,6 @@ export const createBaseScene = (
         addHelpNote,
         shouldShowWireframe: () => shouldShowWireframe,
         shouldShowLabels: () => shouldShowLabels,
+        sidebar,
     };
 };

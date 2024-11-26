@@ -2,11 +2,17 @@ import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
 import { createTextSprite } from "../utils/createTextSprite";
 
-const { scene, render, addHelpNote, shouldShowWireframe, shouldShowLabels } =
-    createBaseScene({
-        sceneTitle: "Unit 2: Polygon with 5 vertices",
-        cameraZ: 20,
-    });
+const {
+    scene,
+    render,
+    addHelpNote,
+    shouldShowWireframe,
+    shouldShowLabels,
+    sidebar,
+} = createBaseScene({
+    sceneTitle: "Unit 2: Polygon with 5 vertices",
+    cameraZ: 20,
+});
 
 const geometry = new THREE.BufferGeometry();
 // prettier-ignore
@@ -126,6 +132,99 @@ for (let i = 0; i < numVertices; i++) {
     labels.push(label);
 }
 
+let shouldRotate = true;
+let rotationSpeed = 0.01;
+let rotationAxis = "y";
+let rotationDirection = 1;
+
+const sceneOptionsDiv = document.createElement("div");
+sceneOptionsDiv.classList.add("mb-4");
+
+sceneOptionsDiv.innerHTML = `
+    <hr class="border border-b-[#000] mb-2" />
+    <h2 class="text-xl font-bold text-center mb-2">Scene Options</h2>
+    <div class="flex flex-col space-y-2 text-lg">
+        <div>
+            <input type="checkbox" id="rotate" checked>
+            <label for="rotate" class="font-bold">Rotate</label>
+        </div>
+        <div>
+            <label for="rotationSpeed" class="font-bold">Rotation Speed</label>
+            <input type="range" id="rotationSpeed" min="0" max="0.1" step="0.01" value="0.01">
+        </div>
+        <div>
+            <label for="rotationAxis" class="font-bold">Rotation Axis</label>
+            <select id="rotationAxis" class="min-w-20 ml-2">
+                <option value="x">x</option>
+                <option value="y" selected>y</option>
+                <option value="z">z</option>
+            </select>
+        </div>
+        <div class="">
+            <label for="rotationDirection" class="font-bold">Rotation Direction</label>
+            <select id="rotationDirection">
+                <option value="1">Clockwise</option>
+                <option value="-1">Counter Clockwise</option>
+            </select>
+        </div>
+        <div>
+            <button id="resetRotation" class="bg-blue-500 text-white p-2 rounded-md text-sm">Reset Rotation</button>
+        </div>
+    </div>
+    `;
+
+sidebar.appendChild(sceneOptionsDiv);
+
+const rotateCheckbox = document.getElementById("rotate") as HTMLInputElement;
+const rotationSpeedInput = document.getElementById(
+    "rotationSpeed",
+) as HTMLInputElement;
+const rotationAxisSelect = document.getElementById(
+    "rotationAxis",
+) as HTMLSelectElement;
+const rotationDirectionSelect = document.getElementById(
+    "rotationDirection",
+) as HTMLSelectElement;
+
+rotateCheckbox.checked = shouldRotate;
+rotationSpeedInput.value = rotationSpeed.toString();
+rotationAxisSelect.value = rotationAxis;
+rotationDirectionSelect.value = rotationDirection.toString();
+
+rotateCheckbox.addEventListener("change", () => {
+    shouldRotate = rotateCheckbox.checked;
+});
+
+rotationSpeedInput.addEventListener("input", () => {
+    rotationSpeed = parseFloat(rotationSpeedInput.value);
+});
+
+rotationAxisSelect.addEventListener("change", () => {
+    rotationAxis = rotationAxisSelect.value;
+});
+
+rotationDirectionSelect.addEventListener("change", () => {
+    rotationDirection = parseInt(rotationDirectionSelect.value);
+});
+
+const rotateMesh = () => {
+    if (shouldRotate) {
+        mesh.rotation[rotationAxis as "x" | "y"] +=
+            rotationSpeed * rotationDirection;
+    }
+};
+
+const resetMeshRotation = () => {
+    shouldRotate = false;
+    rotateCheckbox.checked = false;
+    mesh.rotation.set(0, 0, 0);
+};
+
+const resetRotationButton = document.getElementById(
+    "resetRotation",
+) as HTMLButtonElement;
+resetRotationButton.addEventListener("click", resetMeshRotation);
+
 const animate = () => {
     materials.forEach((material) => {
         const isWireframe = shouldShowWireframe();
@@ -136,8 +235,8 @@ const animate = () => {
         label.visible = shouldShowLabels();
     });
 
+    rotateMesh();
     requestAnimationFrame(animate);
-    mesh.rotation.y += 0.01;
     render();
 };
 
