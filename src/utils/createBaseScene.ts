@@ -58,7 +58,7 @@ export const createBaseScene = (
     const camera = new THREE.PerspectiveCamera(45, canvasAspect, 0.1, 1000);
     camera.position.z = cameraZ;
 
-    scene.add(new THREE.DirectionalLight(0xffffff, 0.5)); // dim light shining from above
+    scene.add(new THREE.AmbientLight(0xffffff, 1)); // dim light shining from above
     var viewpointLight = new THREE.DirectionalLight(0xffffff, 1); // a light to shine in the direction the camera faces
     viewpointLight.position.set(0, 0, 1); // shines down the z-axis
     scene.add(viewpointLight);
@@ -77,6 +77,7 @@ export const createBaseScene = (
         "overflow-auto",
         "p-4",
     );
+    sidebar.style.height = `calc(100vh - 50px)`;
     mainDiv.appendChild(sidebar);
 
     const title = document.createElement("h1");
@@ -228,7 +229,7 @@ export const createBaseScene = (
 
     // help button
     const helpDiv = document.createElement("div");
-    helpDiv.innerHTML = `<div class="flex absolute bottom-1 w-full max-w-[18%]">
+    helpDiv.innerHTML = `<div class="flex fixed bottom-1 w-full max-w-[18%]">
     <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full">
        ? Help
     </button>
@@ -264,6 +265,118 @@ export const createBaseScene = (
     const addHelpNote = (helpNote: HelpNote) => {
         helpNotes.push(helpNote);
     };
+
+    const lightsOptionsDiv = document.createElement("div");
+    lightsOptionsDiv.classList.add("mb-4");
+
+    lightsOptionsDiv.innerHTML = `
+    <hr class="border border-b-[#000] mb-2" />
+    <h2 class="text-xl font-bold text-center mb-2">Lights Options</h2>
+    <div class="flex flex-col space-y-2 text-lg">
+      <div>
+        <input type="checkbox" id="useAmbientLight" checked>
+        <label for="useAmbientLight" class="font-bold">Use Ambient Light</label>
+     </div>
+      <div>
+        <label for="ambientLightColor" class="font-bold">Ambient Light Color</label>
+        <input type="color" id="ambientLightColor" value="#ffffff">
+      </div>
+      <div>
+        <label for="ambientLightIntensity" class="font-bold">Ambient Light Intensity</label>
+        <input type="range" id="ambientLightIntensity" min="0" max="10" step="0.1" value="1.0">
+      </div>
+      <div class="border-b"></div>
+      <div>
+        <input type="checkbox" id="useDirectionalLight" checked>
+        <label for="useDirectionalLight" class="font-bold">Use Directional Light</label>
+       </div>
+       <div>
+            <label for="directionalLightColor" class="font-bold">Directional Light Color</label>
+            <input type="color" id="directionalLightColor" value="#ffffff">
+       </div>
+      <div>
+        <label for="directionalLightIntensity" class="font-bold">Directional Light Intensity</label>
+        <input type="range" id="directionalLightIntensity" min="0" max="10" step="0.1" value="1.0">
+      </div>
+    </div>
+    `;
+
+    sidebar.appendChild(lightsOptionsDiv);
+
+    const useAmbientLight = document.getElementById(
+        "useAmbientLight",
+    ) as HTMLInputElement;
+
+    const useDirectionalLight = document.getElementById(
+        "useDirectionalLight",
+    ) as HTMLInputElement;
+
+    const ambientLightColorInput = document.getElementById(
+        "ambientLightColor",
+    ) as HTMLInputElement;
+
+    const directionalLightColorInput = document.getElementById(
+        "directionalLightColor",
+    ) as HTMLInputElement;
+
+    const ambientLightIntensityInput = document.getElementById(
+        "ambientLightIntensity",
+    ) as HTMLInputElement;
+
+    const directionalLightIntensityInput = document.getElementById(
+        "directionalLightIntensity",
+    ) as HTMLInputElement;
+
+    ambientLightIntensityInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            console.log(child);
+            if (child instanceof THREE.AmbientLight) {
+                child.intensity = parseFloat(ambientLightIntensityInput.value);
+            }
+        });
+    });
+
+    useAmbientLight.addEventListener("change", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.AmbientLight) {
+                child.visible = useAmbientLight.checked;
+            }
+        });
+    });
+
+    useDirectionalLight.addEventListener("change", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.DirectionalLight) {
+                child.visible = useDirectionalLight.checked;
+            }
+        });
+    });
+
+    ambientLightColorInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.AmbientLight) {
+                child.color = new THREE.Color(ambientLightColorInput.value);
+            }
+        });
+    });
+
+    directionalLightColorInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.DirectionalLight) {
+                child.color = new THREE.Color(directionalLightColorInput.value);
+            }
+        });
+    });
+
+    directionalLightIntensityInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.DirectionalLight) {
+                child.intensity = parseFloat(
+                    directionalLightIntensityInput.value,
+                );
+            }
+        });
+    });
 
     return {
         canvas,
