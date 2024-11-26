@@ -117,7 +117,7 @@ scene.add(mesh);
 
 const numVertices = vertices.length / 3;
 
-const labels: THREE.Sprite<THREE.Object3DEventMap>[] = [];
+const verticesLabels: THREE.Sprite<THREE.Object3DEventMap>[] = [];
 
 for (let i = 0; i < numVertices; i++) {
     const x = vertices[i * 3] || 0;
@@ -129,13 +129,54 @@ for (let i = 0; i < numVertices; i++) {
     label.visible = false;
 
     mesh.add(label);
-    labels.push(label);
+    verticesLabels.push(label);
+}
+
+// let's label the faces according to the indices and groups
+// label should be F + group number (0-indexed)
+const faceLabels: THREE.Sprite<THREE.Object3DEventMap>[] = [];
+
+for (let i = 0; i < geometry.groups.length; i++) {
+    const group = geometry.groups[i];
+    if (!group) {
+        continue;
+    }
+    const faceLabel = createTextSprite(`F${i}`);
+    const groupVerticesIndexes = [
+        indices[group.start],
+        indices[group.start + 1],
+        indices[group.start + 2],
+    ];
+
+    const faceCenterCoords = groupVerticesIndexes.reduce(
+        (acc, vertexIndex) => {
+            if (vertexIndex === undefined) {
+                return acc;
+            }
+            acc.x += vertices[vertexIndex * 3] || 0;
+            acc.y += vertices[vertexIndex * 3 + 1] || 0;
+            acc.z += vertices[vertexIndex * 3 + 2] || 0;
+            return acc;
+        },
+        { x: 0, y: 0, z: 0 },
+    );
+
+    const faceCenter = new THREE.Vector3(
+        faceCenterCoords.x / 3,
+        faceCenterCoords.y / 3,
+        faceCenterCoords.z / 3,
+    );
+    faceLabel.position.set(faceCenter.x, faceCenter.y, faceCenter.z);
+    faceLabel.visible = false;
+    mesh.add(faceLabel);
+    faceLabels.push(faceLabel);
 }
 
 let shouldRotate = true;
 let rotationSpeed = 0.01;
 let rotationAxis = "y";
 let rotationDirection = 1;
+let showFacesLabels = false;
 
 const sceneOptionsDiv = document.createElement("div");
 sceneOptionsDiv.classList.add("mb-4");
@@ -168,6 +209,10 @@ sceneOptionsDiv.innerHTML = `
             </select>
         </div>
         <div>
+            <input type="checkbox" id="showFacesLabels">
+            <label for="showFacesLabels" class="font-bold">Show Face Labels</label>
+        </div>
+        <div>
             <button id="resetRotation" class="bg-blue-500 text-white p-2 rounded-md text-sm">Reset Rotation</button>
         </div>
     </div>
@@ -186,10 +231,15 @@ const rotationDirectionSelect = document.getElementById(
     "rotationDirection",
 ) as HTMLSelectElement;
 
+const showFacesLabelsCheckbox = document.getElementById(
+    "showFacesLabels",
+) as HTMLInputElement;
+
 rotateCheckbox.checked = shouldRotate;
 rotationSpeedInput.value = rotationSpeed.toString();
 rotationAxisSelect.value = rotationAxis;
 rotationDirectionSelect.value = rotationDirection.toString();
+showFacesLabelsCheckbox.checked = showFacesLabels;
 
 rotateCheckbox.addEventListener("change", () => {
     shouldRotate = rotateCheckbox.checked;
@@ -205,6 +255,10 @@ rotationAxisSelect.addEventListener("change", () => {
 
 rotationDirectionSelect.addEventListener("change", () => {
     rotationDirection = parseInt(rotationDirectionSelect.value);
+});
+
+showFacesLabelsCheckbox.addEventListener("change", () => {
+    showFacesLabels = showFacesLabelsCheckbox.checked;
 });
 
 const rotateMesh = () => {
@@ -231,8 +285,12 @@ const animate = () => {
         material.wireframe = isWireframe;
     });
 
-    labels.forEach((label) => {
+    verticesLabels.forEach((label) => {
         label.visible = shouldShowLabels();
+    });
+
+    faceLabels.forEach((label) => {
+        label.visible = shouldShowLabels() && showFacesLabels;
     });
 
     rotateMesh();

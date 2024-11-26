@@ -329,7 +329,6 @@ export const createBaseScene = (
 
     ambientLightIntensityInput.addEventListener("input", () => {
         scene.traverse((child) => {
-            console.log(child);
             if (child instanceof THREE.AmbientLight) {
                 child.intensity = parseFloat(ambientLightIntensityInput.value);
             }
