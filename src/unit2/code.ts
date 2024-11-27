@@ -15,6 +15,10 @@ const {
 });
 
 const geometry = new THREE.BufferGeometry();
+
+/**
+ * Creating 10 vertices for two faces of 3D pentagon.
+ */
 // prettier-ignore
 const vertices = new Float32Array([
     0.0,  5.0,  0.0, // Top
@@ -29,6 +33,11 @@ const vertices = new Float32Array([
     -4.8, 1.5,  5.0, // Top-left - back
   ]);
 
+/**
+ * Arranging the vertices into faces (triangles) of 3 vertices each.
+ * Each line below contains 3 numbers that are indexes of vertices that form a face.
+ * This is important to define the mesh structure so that it can be textured, shaded, and rendered.
+ */
 // prettier-ignore
 const indices = [
   0, 1, 2, 
@@ -51,11 +60,19 @@ const indices = [
   2, 3, 8,
   2, 8, 7,
 ];
+
+/**
+ * Attaching the vertices and faces to the geometry object.
+ * Computing the normal vectors is important for shading, interaction with light sources, and remove hidden surfaces.
+ */
 geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 geometry.setIndex(indices);
 geometry.computeVertexNormals();
 // geometry.computeBoundingSphere();
 
+/**
+ * Organizing faces into groups, so that we can apply separate materials to each group.
+ */
 geometry.addGroup(0, 3, 0);
 geometry.addGroup(3, 3, 1);
 geometry.addGroup(6, 3, 2);
@@ -73,6 +90,9 @@ geometry.addGroup(39, 3, 3);
 geometry.addGroup(42, 3, 4);
 geometry.addGroup(45, 3, 0);
 
+/**
+ * @returns Random shade of red color
+ */
 const shadeOfRed = () => {
     const r = THREE.MathUtils.randInt(200, 255);
     return new THREE.Color(`rgb(${r}, 0, 0)`);
@@ -99,6 +119,10 @@ const createFaceMaterial = () => {
     });
 };
 
+/**
+ * Creating a separate material for each face.
+ * All material are almost identical, except for the color that is slightly different for each face.
+ */
 const materials = [
     createFaceMaterial(),
     createFaceMaterial(),
@@ -112,6 +136,9 @@ const materials = [
     createFaceMaterial(),
 ];
 
+/**
+ * Define the mesh and add it to the scene.
+ */
 const mesh = new THREE.Mesh(geometry, materials);
 scene.add(mesh);
 
@@ -301,10 +328,14 @@ const animate = () => {
 animate();
 
 addHelpNote({
-    title: "Unit 2: Polygon with 5 vertices",
-    description: "This is a polygon with 5 vertices. It is a pentagon.",
+    title: "Scene Options",
+    description: "These options are specified for this scene:",
     points: [
-        "The vertices are at the top, top-right, bottom-right, bottom-left, and top-left.",
-        "The sides are red and the polygon is rotating.",
+        "Rotate: Start/Stop the rotation of the mesh.",
+        "Rotation Speed: Adjust the speed of rotation. Default is 0.01.",
+        "Rotation Axis: Change the axis of rotation, the shape will rotate around this axis.",
+        "Rotation Direction: Change the direction of rotation. Default is clockwise.",
+        "Show Face Labels: Show/Hide labels for each face. The global 'Show Labels' control option should be enabled.",
+        "Reset Rotation: Stop the rotation and reset the shape's rotation to the last state before rotation started.",
     ],
 });

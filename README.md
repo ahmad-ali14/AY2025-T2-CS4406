@@ -7,22 +7,27 @@ Live URL: <https://ahmad-ali14.github.io/AY2025-T2-CS4406/>
 
 ## Notes
 
-- The repository is organized into directories, one for each unit.
-- The repository will be deleted after the course ends.
-- We will be using the latest version of Three.js for the assignments `v0.170`.
-- The assignments base is broken because of the new version of Three.js, so I will update the base code to work
-  with the new version.
+-   The repository is organized into directories, one for each unit.
+-   The repository will be deleted after the course ends.
+-   We will be using the latest version of Three.js for the assignments `v0.170`.
+-   The assignments base is broken because of the new version of Three.js, so I will update the base code to work with the new version.
 
 ---
 
 ## Assignments
 
-### Unit 1: Introduction to Computer Graphics (14-20 Nov 2025)
+| Unit | Demo                                                                 | Source code                                                                                       | Notes                        |
+| ---- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
+| 1    |                                                                      |                                                                                                   | No assignment for this unit. |
+| 2    | [Unit 2 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit2/) | [Unit 2 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit2/code.ts) |
 
-- No assignment for this unit.
+## Guide
 
-### Unit 2: Principles of Graphics Modeling (21-27 Nov 2025)
+-   All demos have the same layout, with the following elements (see image below):
+    -   (1)- Sidebar: Right sidebar starting with the title of the unit.
+    -   (2)- Global options: Controls camera, light, and renderer settings; it is available in all demos.
+    -   (3)- Unit-specific options: Controls specific settings for the current unit.
+    -   (4)- Help button: Opens a modal with information about the demo.
+    -   (5)- Scene: The main area where the 3D scene is displayed.
 
-- Source code: <https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/unit2/index.html>
-- Notes: <https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/unit2/notes.md>
-- Live demo: <https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit2/>
+<img src="./src/assets/images/1.png" alt="Layout" width="100%" />

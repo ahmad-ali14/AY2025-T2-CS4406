@@ -6,14 +6,31 @@ type HelpNote = {
     description: string;
     points: string[];
 };
-const defaultHelpNote: HelpNote = {
-    title: "Controls Options Help",
+const defaultControlOptionsHelpNote: HelpNote = {
+    title: "Controls Options",
     description:
         "This section adds extra functionality to control the scene including grid, axes, mouse controls, and zoom.",
     points: [
-        "Use Orbit Controls to navigate the scene (pan, zoom, rotate).",
-        "Toggle grid and axes helpers using the sidebar options.",
-        "Modify the camera's position or other properties in the code.",
+        "Show Grid: Show/Hide the XY grid helper in the scene.",
+        "Show Axes: Show/Hide the XYZ axes helper in the scene.",
+        "Use Orbit Controls: Enable/Disable the mouse orbit controls. If enabled, use the mouse to rotate, zoom, and pan the scene.",
+        "Show Wireframe: Show/Hide the wireframe of the objects in the scene. Useful for debugging.",
+        "Show Labels: Show/Hide the labels of the objects in the scene. If this is disabled, all labels across the scene will be hidden.",
+    ],
+};
+
+const defaultLightsOptionsHelpNote: HelpNote = {
+    title: "Lights Options",
+    description:
+        "This section adds extra functionality to control the scene lights including ambient and directional lights.",
+    points: [
+        "Use Ambient Light: Toggles the ambient light in the scene.",
+        "Ambient Light Color: Changes the color of the ambient light.",
+        "Ambient Light Intensity: Changes the intensity of the ambient light.",
+        "Use Directional Light: Toggles the directional light in the scene.",
+        "Directional Light Color: Changes the color of the directional light.",
+        "Directional Light Intensity: Changes the intensity of the directional light.",
+        "Note: the position of the directional light is not configurable, yet.",
     ],
 };
 
@@ -186,7 +203,10 @@ export const createBaseScene = (
     });
 
     // help modal
-    const helpNotes: HelpNote[] = [defaultHelpNote];
+    const helpNotes: HelpNote[] = [
+        defaultControlOptionsHelpNote,
+        defaultLightsOptionsHelpNote,
+    ];
     const helpModal = document.createElement("div");
     helpModal.id = "helpModal";
     helpModal.classList.add(
