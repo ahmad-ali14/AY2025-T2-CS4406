@@ -397,6 +397,9 @@ export const createBaseScene = (
         });
     });
 
+    const helper = new THREE.CameraHelper(camera);
+    scene.add(helper);
+
     return {
         canvas,
         scene,
