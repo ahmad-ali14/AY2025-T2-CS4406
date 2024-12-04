@@ -46,6 +46,7 @@ type CreateBaseSceneParams = {
     useAmbientLight?: boolean;
     useDirectionalLight?: boolean;
     usePointLight?: boolean;
+    defaultLightColor?: string;
 };
 
 const defaultParams: Required<CreateBaseSceneParams> = {
@@ -60,12 +61,13 @@ const defaultParams: Required<CreateBaseSceneParams> = {
     useAmbientLight: true,
     useDirectionalLight: true,
     usePointLight: true,
+    defaultLightColor: "#ffffff",
 };
 
 export const createBaseScene = (
     params: CreateBaseSceneParams = defaultParams,
 ) => {
-    const { canvasId, cameraZ, sceneTitle } =
+    const { canvasId, cameraZ, sceneTitle, defaultLightColor } =
         params as Required<CreateBaseSceneParams>;
     const mainDiv = document.createElement("div");
     mainDiv.classList.add("flex", "h-full", "w-full");
@@ -91,16 +93,16 @@ export const createBaseScene = (
     const camera = new THREE.PerspectiveCamera(45, canvasAspect, 0.1, 1000);
     camera.position.z = cameraZ;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    const ambientLight = new THREE.AmbientLight(defaultLightColor, 1);
     ambientLight.visible = params.useAmbientLight ?? true;
     scene.add(ambientLight); // dim light shining from above
 
-    var viewpointLight = new THREE.PointLight(0xffffff, 1); // a light to shine in the direction the camera faces
+    var viewpointLight = new THREE.PointLight(defaultLightColor, 1); // a light to shine in the direction the camera faces
     viewpointLight.position.set(0, 0, 1); // shines down the z-axis
     viewpointLight.visible = params.usePointLight ?? true;
     scene.add(viewpointLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(defaultLightColor, 1);
     directionalLight.position.set(1, 1, 1);
     directionalLight.visible = params.useDirectionalLight ?? true;
     scene.add(directionalLight);
@@ -325,7 +327,7 @@ export const createBaseScene = (
      </div>
       <div>
         <label for="ambientLightColor" class="font-bold">Ambient Light Color</label>
-        <input type="color" id="ambientLightColor" value="#ffffff">
+        <input type="color" id="ambientLightColor" value="${defaultLightColor}">
       </div>
       <div>
         <label for="ambientLightIntensity" class="font-bold">Ambient Light Intensity</label>
@@ -338,7 +340,7 @@ export const createBaseScene = (
        </div>
        <div>
             <label for="directionalLightColor" class="font-bold">Directional Light Color</label>
-            <input type="color" id="directionalLightColor" value="#ffffff">
+            <input type="color" id="directionalLightColor" value="${defaultLightColor}">
        </div>
       <div>
         <label for="directionalLightIntensity" class="font-bold">Directional Light Intensity</label>
@@ -351,7 +353,7 @@ export const createBaseScene = (
        </div>
        <div>
             <label for="pointLightColor" class="font-bold">Point Light Color</label>
-            <input type="color" id="pointLightColor" value="#ffffff">
+            <input type="color" id="pointLightColor" value="${defaultLightColor}">
        </div>
       <div>
         <label for="pointLightIntensity" class="font-bold">Point Light Intensity</label>
@@ -402,6 +404,9 @@ export const createBaseScene = (
     useAmbientLight.checked = params.useAmbientLight ?? true;
     useDirectionalLight.checked = params.useDirectionalLight ?? true;
     usePointLight.checked = params.usePointLight ?? true;
+    useAmbientLight.value = defaultLightColor as string;
+    useDirectionalLight.value = defaultLightColor as string;
+    usePointLight.value = defaultLightColor as string;
 
     ambientLightIntensityInput.addEventListener("input", () => {
         scene.traverse((child) => {
@@ -465,6 +470,14 @@ export const createBaseScene = (
         scene.traverse((child) => {
             if (child instanceof THREE.PointLight) {
                 child.color = new THREE.Color(pointLightColorInput.value);
+            }
+        });
+    });
+
+    pointLightIntensityInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.PointLight) {
+                child.intensity = parseFloat(pointLightIntensityInput.value);
             }
         });
     });

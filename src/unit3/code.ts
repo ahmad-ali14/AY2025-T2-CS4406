@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
 
+const yellowHex = "#ffffaa";
+
 const {
     scene,
     render,
@@ -23,23 +25,19 @@ const {
     showWireframe: false,
     useOrbitControls: false,
     useAmbientLight: false,
-    useDirectionalLight: false,
-    usePointLight: true,
+    useDirectionalLight: true,
+    usePointLight: false,
+    defaultLightColor: yellowHex,
 });
 
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-scene.background = new THREE.Color("0xffffff");
-
-const yellowHex = 0xffffaa;
-// ambientLight.visible = false;
-// directionalLight.visible = false;
-
-viewpointLight.color = new THREE.Color(yellowHex);
-// viewpointLight.position.set(canvas.width / 2, -canvas.height / 2, 0);
-// viewpointLight.visible = true;
-// viewpointLight.intensity = 5;
-viewpointLight.castShadow = true;
+directionalLight.color = new THREE.Color(yellowHex);
+directionalLight.position.set(0, 0, 1);
+directionalLight.visible = true;
+directionalLight.intensity = 2;
+directionalLight.castShadow = true;
 
 const torusKnotConfig = {
     radius: 25,
@@ -68,14 +66,14 @@ const torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
 torusKnot.position.x = 0;
 torusKnot.position.y = 0;
 torusKnot.castShadow = true;
-torusKnot.receiveShadow = true;
+torusKnot.receiveShadow = false;
 scene.add(torusKnot);
 
 let xDirection = 1;
 let yDirection = 1;
 let zDirection = 1;
-let xSpeed = 2;
-let ySpeed = 2;
+let xSpeed = 5;
+let ySpeed = 5;
 let zSpeed = 0;
 
 let rotationSpeed = 0.01;
@@ -85,6 +83,16 @@ const generateRandomColor = () => {
     return Math.floor(Math.random() * 16777215);
 };
 
+const planeGeometry = new THREE.PlaneGeometry(
+    window.innerWidth,
+    window.innerHeight,
+    32,
+    32,
+);
+const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.receiveShadow = true;
+scene.add(plane);
 
 const animate = () => {
     const mostRightX =
