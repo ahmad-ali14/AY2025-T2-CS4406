@@ -60,12 +60,12 @@ const generateRandomColor = () => {
 };
 
 const animate = () => {
-    // https://stackoverflow.com/questions/13350875/three-js-width-of-view/13351534#13351534
-    const vofRadians = THREE.MathUtils.degToRad(camera.fov);
-    const frustumHeight = 2 * Math.tan(vofRadians) * camera.position.z;
-    const frustumWidth = frustumHeight * camera.aspect;
-    const mostRightX = frustumWidth / 2 - 0.8 * camera.position.z;
-    const mostTopY = frustumHeight / 2 - 0.6 * camera.position.z;
+    const mostRightX =
+        (window.innerWidth * 0.8) / 2 -
+        (torusKnotConfig.radius + torusKnotConfig.tube);
+    const mostTopY =
+        window.innerHeight / 2 -
+        (torusKnotConfig.radius + torusKnotConfig.tube);
 
     const torusKnotEdgeX = torusKnot.position.x;
     const torusKnotEdgeY = torusKnot.position.y;
