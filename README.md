@@ -19,7 +19,8 @@ Live URL: <https://ahmad-ali14.github.io/AY2025-T2-CS4406/>
 | Unit | Demo                                                                 | Source code                                                                                       | Notes                        |
 | ---- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
 | 1    |                                                                      |                                                                                                   | No assignment for this unit. |
-| 2    | [Unit 2 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit2/) | [Unit 2 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit2/code.ts) |
+| 2    | [Unit 2 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit2/) | [Unit 2 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit2/code.ts) |                              |
+| 3    | [Unit 3 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit3/) | [Unit 3 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit3/code.ts) |                              |
 
 ## Guide
 
