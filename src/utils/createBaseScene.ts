@@ -75,10 +75,14 @@ export const createBaseScene = (
     const camera = new THREE.PerspectiveCamera(45, canvasAspect, 0.1, 1000);
     camera.position.z = cameraZ;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 1)); // dim light shining from above
-    var viewpointLight = new THREE.DirectionalLight(0xffffff, 1); // a light to shine in the direction the camera faces
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(ambientLight); // dim light shining from above
+    var viewpointLight = new THREE.PointLight(0xffffff, 1); // a light to shine in the direction the camera faces
     viewpointLight.position.set(0, 0, 1); // shines down the z-axis
     scene.add(viewpointLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(1, 1, 1);
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(w, h);
@@ -397,8 +401,18 @@ export const createBaseScene = (
         });
     });
 
-    const helper = new THREE.CameraHelper(camera);
-    scene.add(helper);
+    const cameraHelper = new THREE.CameraHelper(camera);
+    scene.add(cameraHelper);
+    cameraHelper.visible = false;
+
+    window.addEventListener("resize", () => {
+        // Update renderer
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Update camera
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
 
     return {
         canvas,
@@ -412,5 +426,8 @@ export const createBaseScene = (
         shouldShowWireframe: () => shouldShowWireframe,
         shouldShowLabels: () => shouldShowLabels,
         sidebar,
+        ambientLight,
+        viewpointLight,
+        directionalLight,
     };
 };
