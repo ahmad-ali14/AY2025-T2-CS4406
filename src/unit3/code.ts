@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
-import { createTextSprite } from "../utils/createTextSprite";
 
 const {
     scene,
@@ -12,10 +11,27 @@ const {
     canvas,
     renderer,
     camera,
+    ambientLight,
+    viewpointLight,
+    directionalLight,
 } = createBaseScene({
     sceneTitle: "Unit 2: Polygon with 5 vertices",
     cameraZ: 1000,
 });
+
+renderer.shadowMap.enabled = true;
+
+scene.background = new THREE.Color("0xffffff");
+
+const yellowHex = 0xffffaa;
+ambientLight.visible = false;
+directionalLight.visible = false;
+
+viewpointLight.color = new THREE.Color(yellowHex);
+viewpointLight.position.set(canvas.width / 2, -canvas.height / 2, 0);
+viewpointLight.visible = true;
+viewpointLight.intensity = 5;
+viewpointLight.castShadow = true;
 
 const torusKnotConfig = {
     radius: 25,
@@ -43,6 +59,8 @@ const torusKnotMaterial = new THREE.MeshBasicMaterial({
 const torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
 torusKnot.position.x = 0;
 torusKnot.position.y = 0;
+torusKnot.castShadow = true;
+torusKnot.receiveShadow = true;
 scene.add(torusKnot);
 
 let xDirection = 1;
