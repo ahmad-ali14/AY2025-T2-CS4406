@@ -38,12 +38,28 @@ type CreateBaseSceneParams = {
     canvasId?: string;
     sceneTitle: string;
     cameraZ?: number;
+    showGrid?: boolean;
+    showAxes?: boolean;
+    useOrbitControls?: boolean;
+    showWireframe?: boolean;
+    showLabels?: boolean;
+    useAmbientLight?: boolean;
+    useDirectionalLight?: boolean;
+    usePointLight?: boolean;
 };
 
-const defaultParams: CreateBaseSceneParams = {
+const defaultParams: Required<CreateBaseSceneParams> = {
     canvasId: "glcanvas",
     sceneTitle: "Base Scene",
     cameraZ: 200,
+    showGrid: true,
+    showAxes: true,
+    useOrbitControls: true,
+    showWireframe: false,
+    showLabels: true,
+    useAmbientLight: true,
+    useDirectionalLight: true,
+    usePointLight: true,
 };
 
 export const createBaseScene = (
@@ -76,13 +92,18 @@ export const createBaseScene = (
     camera.position.z = cameraZ;
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    ambientLight.visible = params.useAmbientLight ?? true;
     scene.add(ambientLight); // dim light shining from above
+
     var viewpointLight = new THREE.PointLight(0xffffff, 1); // a light to shine in the direction the camera faces
     viewpointLight.position.set(0, 0, 1); // shines down the z-axis
+    viewpointLight.visible = params.usePointLight ?? true;
     scene.add(viewpointLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 1, 1);
+    directionalLight.visible = params.useDirectionalLight ?? true;
+    scene.add(directionalLight);
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(w, h);
@@ -108,22 +129,23 @@ export const createBaseScene = (
 
     shouldShowSidebar && sidebar.appendChild(title);
 
-    const shouldShowHelpers = true;
-    const shouldUseOrbitControls = true;
-    let shouldShowWireframe = false;
-    let shouldShowLabels = true;
+    const shouldShowAxis = params.showAxes ?? true;
+    const shouldShowGrid = params.showGrid ?? true;
+    const shouldUseOrbitControls = params.useOrbitControls ?? true;
+    let shouldShowWireframe = params.showWireframe ?? false;
+    let shouldShowLabels = params.showLabels ?? true;
 
     // Add a grid to the scene
     const gridHelper = new THREE.GridHelper(1000, 1000);
     gridHelper.position.set(0, 0, 0);
     gridHelper.material.opacity = 0.25;
-    gridHelper.visible = shouldShowHelpers;
+    gridHelper.visible = shouldShowGrid;
     scene.add(gridHelper);
 
     // Add an axis to the scene
     const axesHelper = new THREE.AxesHelper(1000);
     axesHelper.position.set(0, 0, 0);
-    axesHelper.visible = shouldShowHelpers;
+    axesHelper.visible = shouldShowAxis;
     axesHelper.setColors(0x0000ff, 0x00ff00, 0xff0000);
     scene.add(axesHelper);
 
@@ -180,8 +202,8 @@ export const createBaseScene = (
         "showLabels",
     ) as HTMLInputElement;
 
-    showGrid.checked = shouldShowHelpers;
-    showAxes.checked = shouldShowHelpers;
+    showGrid.checked = shouldShowGrid;
+    showAxes.checked = shouldShowAxis;
     useOrbitControls.checked = shouldUseOrbitControls;
     showWireframe.checked = shouldShowWireframe;
     showLabels.checked = shouldShowLabels;
@@ -322,6 +344,20 @@ export const createBaseScene = (
         <label for="directionalLightIntensity" class="font-bold">Directional Light Intensity</label>
         <input type="range" id="directionalLightIntensity" min="0" max="10" step="0.1" value="1.0">
       </div>
+      <div class="border-b"></div>
+      <div>
+        <input type="checkbox" id="usePointLight" checked>
+        <label for="usePointLight" class="font-bold">Use Point Light</label>
+       </div>
+       <div>
+            <label for="pointLightColor" class="font-bold">Point Light Color</label>
+            <input type="color" id="pointLightColor" value="#ffffff">
+       </div>
+      <div>
+        <label for="pointLightIntensity" class="font-bold">Point Light Intensity</label>
+        <input type="range" id="pointLightIntensity" min="0" max="10" step="0.1" value="1.0">
+      </div>
+      
     </div>
     `;
 
@@ -333,6 +369,10 @@ export const createBaseScene = (
 
     const useDirectionalLight = document.getElementById(
         "useDirectionalLight",
+    ) as HTMLInputElement;
+
+    const usePointLight = document.getElementById(
+        "usePointLight",
     ) as HTMLInputElement;
 
     const ambientLightColorInput = document.getElementById(
@@ -350,6 +390,18 @@ export const createBaseScene = (
     const directionalLightIntensityInput = document.getElementById(
         "directionalLightIntensity",
     ) as HTMLInputElement;
+
+    const pointLightColorInput = document.getElementById(
+        "pointLightColor",
+    ) as HTMLInputElement;
+
+    const pointLightIntensityInput = document.getElementById(
+        "pointLightIntensity",
+    ) as HTMLInputElement;
+
+    useAmbientLight.checked = params.useAmbientLight ?? true;
+    useDirectionalLight.checked = params.useDirectionalLight ?? true;
+    usePointLight.checked = params.usePointLight ?? true;
 
     ambientLightIntensityInput.addEventListener("input", () => {
         scene.traverse((child) => {
@@ -397,6 +449,22 @@ export const createBaseScene = (
                 child.intensity = parseFloat(
                     directionalLightIntensityInput.value,
                 );
+            }
+        });
+    });
+
+    usePointLight.addEventListener("change", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.PointLight) {
+                child.visible = usePointLight.checked;
+            }
+        });
+    });
+
+    pointLightColorInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.PointLight) {
+                child.color = new THREE.Color(pointLightColorInput.value);
             }
         });
     });

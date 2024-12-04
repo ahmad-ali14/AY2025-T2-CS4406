@@ -17,6 +17,14 @@ const {
 } = createBaseScene({
     sceneTitle: "Unit 2: Polygon with 5 vertices",
     cameraZ: 1000,
+    showAxes: false,
+    showGrid: false,
+    showLabels: false,
+    showWireframe: false,
+    useOrbitControls: false,
+    useAmbientLight: false,
+    useDirectionalLight: false,
+    usePointLight: true,
 });
 
 renderer.shadowMap.enabled = true;
@@ -24,20 +32,20 @@ renderer.shadowMap.enabled = true;
 scene.background = new THREE.Color("0xffffff");
 
 const yellowHex = 0xffffaa;
-ambientLight.visible = false;
-directionalLight.visible = false;
+// ambientLight.visible = false;
+// directionalLight.visible = false;
 
 viewpointLight.color = new THREE.Color(yellowHex);
-viewpointLight.position.set(canvas.width / 2, -canvas.height / 2, 0);
-viewpointLight.visible = true;
-viewpointLight.intensity = 5;
+// viewpointLight.position.set(canvas.width / 2, -canvas.height / 2, 0);
+// viewpointLight.visible = true;
+// viewpointLight.intensity = 5;
 viewpointLight.castShadow = true;
 
 const torusKnotConfig = {
     radius: 25,
-    tube: 3,
-    tubularSegments: 135,
-    radialSegments: 135,
+    tube: 5,
+    tubularSegments: 300,
+    radialSegments: 300,
     p: 2,
     q: 3,
 };
@@ -53,7 +61,7 @@ const torusKnotGeometry = new THREE.TorusKnotGeometry(
 
 const torusKnotMaterial = new THREE.MeshBasicMaterial({
     color: 0xff00ff,
-    wireframe: false,
+    wireframe: shouldShowWireframe(),
 });
 
 const torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
@@ -76,6 +84,7 @@ let rotationDirection = 1;
 const generateRandomColor = () => {
     return Math.floor(Math.random() * 16777215);
 };
+
 
 const animate = () => {
     const mostRightX =
