@@ -38,18 +38,36 @@ type CreateBaseSceneParams = {
     canvasId?: string;
     sceneTitle: string;
     cameraZ?: number;
+    showGrid?: boolean;
+    showAxes?: boolean;
+    useOrbitControls?: boolean;
+    showWireframe?: boolean;
+    showLabels?: boolean;
+    useAmbientLight?: boolean;
+    useDirectionalLight?: boolean;
+    usePointLight?: boolean;
+    defaultLightColor?: string;
 };
 
-const defaultParams: CreateBaseSceneParams = {
+const defaultParams: Required<CreateBaseSceneParams> = {
     canvasId: "glcanvas",
     sceneTitle: "Base Scene",
     cameraZ: 200,
+    showGrid: true,
+    showAxes: true,
+    useOrbitControls: true,
+    showWireframe: false,
+    showLabels: true,
+    useAmbientLight: true,
+    useDirectionalLight: true,
+    usePointLight: true,
+    defaultLightColor: "#ffffff",
 };
 
 export const createBaseScene = (
     params: CreateBaseSceneParams = defaultParams,
 ) => {
-    const { canvasId, cameraZ, sceneTitle } =
+    const { canvasId, cameraZ, sceneTitle, defaultLightColor } =
         params as Required<CreateBaseSceneParams>;
     const mainDiv = document.createElement("div");
     mainDiv.classList.add("flex", "h-full", "w-full");
@@ -75,10 +93,19 @@ export const createBaseScene = (
     const camera = new THREE.PerspectiveCamera(45, canvasAspect, 0.1, 1000);
     camera.position.z = cameraZ;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 1)); // dim light shining from above
-    var viewpointLight = new THREE.DirectionalLight(0xffffff, 1); // a light to shine in the direction the camera faces
+    const ambientLight = new THREE.AmbientLight(defaultLightColor, 1);
+    ambientLight.visible = params.useAmbientLight ?? true;
+    scene.add(ambientLight); // dim light shining from above
+
+    var viewpointLight = new THREE.PointLight(defaultLightColor, 1); // a light to shine in the direction the camera faces
     viewpointLight.position.set(0, 0, 1); // shines down the z-axis
+    viewpointLight.visible = params.usePointLight ?? true;
     scene.add(viewpointLight);
+
+    const directionalLight = new THREE.DirectionalLight(defaultLightColor, 1);
+    directionalLight.position.set(1, 1, 1);
+    directionalLight.visible = params.useDirectionalLight ?? true;
+    scene.add(directionalLight);
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(w, h);
@@ -104,22 +131,23 @@ export const createBaseScene = (
 
     shouldShowSidebar && sidebar.appendChild(title);
 
-    const shouldShowHelpers = true;
-    const shouldUseOrbitControls = true;
-    let shouldShowWireframe = false;
-    let shouldShowLabels = true;
+    const shouldShowAxis = params.showAxes ?? true;
+    const shouldShowGrid = params.showGrid ?? true;
+    const shouldUseOrbitControls = params.useOrbitControls ?? true;
+    let shouldShowWireframe = params.showWireframe ?? false;
+    let shouldShowLabels = params.showLabels ?? true;
 
     // Add a grid to the scene
     const gridHelper = new THREE.GridHelper(1000, 1000);
     gridHelper.position.set(0, 0, 0);
     gridHelper.material.opacity = 0.25;
-    gridHelper.visible = shouldShowHelpers;
+    gridHelper.visible = shouldShowGrid;
     scene.add(gridHelper);
 
     // Add an axis to the scene
     const axesHelper = new THREE.AxesHelper(1000);
     axesHelper.position.set(0, 0, 0);
-    axesHelper.visible = shouldShowHelpers;
+    axesHelper.visible = shouldShowAxis;
     axesHelper.setColors(0x0000ff, 0x00ff00, 0xff0000);
     scene.add(axesHelper);
 
@@ -176,8 +204,8 @@ export const createBaseScene = (
         "showLabels",
     ) as HTMLInputElement;
 
-    showGrid.checked = shouldShowHelpers;
-    showAxes.checked = shouldShowHelpers;
+    showGrid.checked = shouldShowGrid;
+    showAxes.checked = shouldShowAxis;
     useOrbitControls.checked = shouldUseOrbitControls;
     showWireframe.checked = shouldShowWireframe;
     showLabels.checked = shouldShowLabels;
@@ -299,7 +327,7 @@ export const createBaseScene = (
      </div>
       <div>
         <label for="ambientLightColor" class="font-bold">Ambient Light Color</label>
-        <input type="color" id="ambientLightColor" value="#ffffff">
+        <input type="color" id="ambientLightColor" value="${defaultLightColor}">
       </div>
       <div>
         <label for="ambientLightIntensity" class="font-bold">Ambient Light Intensity</label>
@@ -312,12 +340,26 @@ export const createBaseScene = (
        </div>
        <div>
             <label for="directionalLightColor" class="font-bold">Directional Light Color</label>
-            <input type="color" id="directionalLightColor" value="#ffffff">
+            <input type="color" id="directionalLightColor" value="${defaultLightColor}">
        </div>
       <div>
         <label for="directionalLightIntensity" class="font-bold">Directional Light Intensity</label>
         <input type="range" id="directionalLightIntensity" min="0" max="10" step="0.1" value="1.0">
       </div>
+      <div class="border-b"></div>
+      <div>
+        <input type="checkbox" id="usePointLight" checked>
+        <label for="usePointLight" class="font-bold">Use Point Light</label>
+       </div>
+       <div>
+            <label for="pointLightColor" class="font-bold">Point Light Color</label>
+            <input type="color" id="pointLightColor" value="${defaultLightColor}">
+       </div>
+      <div>
+        <label for="pointLightIntensity" class="font-bold">Point Light Intensity</label>
+        <input type="range" id="pointLightIntensity" min="0" max="10" step="0.1" value="1.0">
+      </div>
+      
     </div>
     `;
 
@@ -329,6 +371,10 @@ export const createBaseScene = (
 
     const useDirectionalLight = document.getElementById(
         "useDirectionalLight",
+    ) as HTMLInputElement;
+
+    const usePointLight = document.getElementById(
+        "usePointLight",
     ) as HTMLInputElement;
 
     const ambientLightColorInput = document.getElementById(
@@ -346,6 +392,21 @@ export const createBaseScene = (
     const directionalLightIntensityInput = document.getElementById(
         "directionalLightIntensity",
     ) as HTMLInputElement;
+
+    const pointLightColorInput = document.getElementById(
+        "pointLightColor",
+    ) as HTMLInputElement;
+
+    const pointLightIntensityInput = document.getElementById(
+        "pointLightIntensity",
+    ) as HTMLInputElement;
+
+    useAmbientLight.checked = params.useAmbientLight ?? true;
+    useDirectionalLight.checked = params.useDirectionalLight ?? true;
+    usePointLight.checked = params.usePointLight ?? true;
+    useAmbientLight.value = defaultLightColor as string;
+    useDirectionalLight.value = defaultLightColor as string;
+    usePointLight.value = defaultLightColor as string;
 
     ambientLightIntensityInput.addEventListener("input", () => {
         scene.traverse((child) => {
@@ -397,6 +458,43 @@ export const createBaseScene = (
         });
     });
 
+    usePointLight.addEventListener("change", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.PointLight) {
+                child.visible = usePointLight.checked;
+            }
+        });
+    });
+
+    pointLightColorInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.PointLight) {
+                child.color = new THREE.Color(pointLightColorInput.value);
+            }
+        });
+    });
+
+    pointLightIntensityInput.addEventListener("input", () => {
+        scene.traverse((child) => {
+            if (child instanceof THREE.PointLight) {
+                child.intensity = parseFloat(pointLightIntensityInput.value);
+            }
+        });
+    });
+
+    const cameraHelper = new THREE.CameraHelper(camera);
+    scene.add(cameraHelper);
+    cameraHelper.visible = false;
+
+    window.addEventListener("resize", () => {
+        // Update renderer
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Update camera
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
+
     return {
         canvas,
         scene,
@@ -409,5 +507,8 @@ export const createBaseScene = (
         shouldShowWireframe: () => shouldShowWireframe,
         shouldShowLabels: () => shouldShowLabels,
         sidebar,
+        ambientLight,
+        viewpointLight,
+        directionalLight,
     };
 };
