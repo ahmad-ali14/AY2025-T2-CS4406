@@ -1,5 +1,9 @@
 import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
+import img1 from "./images/1.jpg";
+import img2 from "./images/2.jpg";
+import img3 from "./images/3.jpeg";
+import img4 from "./images/4.jpg";
 
 const { render, scene, sidebar, addHelpNote } = createBaseScene({
     sceneTitle: "Unit 4: Textured Cube",
@@ -20,11 +24,11 @@ const cubeGeometry = new THREE.BoxGeometry(
 const cubeMaterials = [
     // right side
     new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load("./images/1.jpg"),
+        map: new THREE.TextureLoader().load(img1),
     }),
     // left side
     new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load("./images/2.jpg"),
+        map: new THREE.TextureLoader().load(img2),
     }),
     // top side
     new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
@@ -32,11 +36,11 @@ const cubeMaterials = [
     new THREE.MeshBasicMaterial({ color: 0xff0000 }),
     // front side
     new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load("./images/3.jpeg"),
+        map: new THREE.TextureLoader().load(img3),
     }),
     // back side
     new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load("./images/4.jpg"),
+        map: new THREE.TextureLoader().load(img4),
     }),
 ];
 
