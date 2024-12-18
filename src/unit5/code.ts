@@ -74,6 +74,13 @@ const h4Label = createTextSprite("H4", { scale: spriteScale });
 // simplify variable name
 const bl = bondLength;
 
+/**
+ * After creating the atoms and bond meshes by assembling their geometries and materials,
+ * We need to position them on the scene properly.
+ * `atomPositions` is an array that holds x, y, z components for the position of each atom.
+ * `bondPositions` is an array that holds "the initial"  x, y, z components for the position of each bond.
+ */
+
 // prettier-ignore
 const atomPositions = {
     carbon: [bl *  0,       bl * 1.25,     bl *  0],
@@ -108,15 +115,23 @@ bond2.position.set(...bondPositions.bond2);
 bond3.position.set(...bondPositions.bond3);
 bond4.position.set(...bondPositions.bond4);
 
+/**
+ * In order to see the shadow properly, we need to create a plane that will act as the ground.
+ * the following creates a wide plane and position it below the molecule.
+ */
 const planeGeometry = new THREE.PlaneGeometry(100 * 1000, 100 * 1000);
 const planeMaterial = new THREE.MeshStandardMaterial({
     color: THREE.Color.NAMES.black,
     side: THREE.DoubleSide,
 });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.rotation.x = Math.PI / 1.999;
+plane.rotation.x = Math.PI / 2;
 plane.position.y = -bondLength * 1.7;
 
+/**
+ * In order to rotate the entire molecule as one object, we need to group all the objects together.
+ * This gives us a single mesh that we can control.
+ */
 const moleculeGroup = new THREE.Group();
 moleculeGroup.add(
     carbon___Atom,
@@ -135,16 +150,15 @@ moleculeGroup.add(
     h4Label,
 );
 
-const labels = [crLabel, h1Label, h2Label, h3Label, h4Label];
-const materials = [
-    carbonAtomMaterial,
-    hydrogenAtomMaterial,
-    bondMaterial,
-    planeMaterial,
-];
+scene.add(moleculeGroup, plane); // add necessary objects to the scene
 
-scene.add(moleculeGroup, plane);
-
+/**
+ * Handling shadows:
+ * - configure necessary objects to cast and receive shadows.
+ * - configure the directional light position and other properties.
+ * - set the light source at the top left corner of the canvas.
+ * - configure the shadow camera properties.
+ */
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -185,8 +199,8 @@ directionalLight.shadow.camera.right = 1000;
 directionalLight.shadow.camera.top = 1000;
 directionalLight.shadow.camera.bottom = -1000;
 
-camera.position.set(300, 1000, 200);
-camera.lookAt(carbon___Atom.position);
+camera.position.set(300, 1000, 200); // setting a good angle to see more of scene.
+camera.lookAt(carbon___Atom.position); // look at the carbon atom by default
 
 // orientation of the bond cylinder
 // the cylinders perpendicular to the sphere's surface and at the center of them
@@ -220,6 +234,14 @@ reOrientBond({ bond: bond2, carbon: carbon___Atom, hydrogen: hydrogenAtom2 });
 reOrientBond({ bond: bond3, carbon: carbon___Atom, hydrogen: hydrogenAtom3 });
 reOrientBond({ bond: bond4, carbon: carbon___Atom, hydrogen: hydrogenAtom4 });
 
+/**
+ * Scene controls:
+ * - Stop/Start the rotation of the molecule.
+ * - Adjust the speed of rotation.
+ * - Change the axis of rotation.
+ * - Change the direction of rotation.
+ * - Reset the rotation of the molecule.
+ */
 let shouldRotate = true;
 let rotationSpeed = 0.01;
 let rotationAxis = "y";
@@ -312,6 +334,15 @@ const resetRotationButton = document.getElementById(
     "resetRotation",
 ) as HTMLButtonElement;
 resetRotationButton.addEventListener("click", resetCubeRotation);
+
+// grouping objects for easier control and manipulation
+const labels = [crLabel, h1Label, h2Label, h3Label, h4Label];
+const materials = [
+    carbonAtomMaterial,
+    hydrogenAtomMaterial,
+    bondMaterial,
+    planeMaterial,
+];
 
 const animate = () => {
     requestAnimationFrame(animate);
