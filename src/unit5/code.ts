@@ -13,11 +13,15 @@ const { render, scene, directionalLight, renderer, canvas, camera } =
     });
 
 const carbonAtomGeometry = new THREE.SphereGeometry(80, 32, 32);
-const carbonAtomMaterial = new THREE.MeshStandardMaterial({ color: "red" });
+const carbonAtomMaterial = new THREE.MeshStandardMaterial({
+    color: THREE.Color.NAMES.red,
+});
 const carbonAtom = new THREE.Mesh(carbonAtomGeometry, carbonAtomMaterial);
 
 const hydrogenAtomGeometry = new THREE.SphereGeometry(30, 32, 32);
-const hydrogenAtomMaterial = new THREE.MeshStandardMaterial({ color: "blue" });
+const hydrogenAtomMaterial = new THREE.MeshStandardMaterial({
+    color: THREE.Color.NAMES.blue,
+});
 
 const hydrogenAtom1 = new THREE.Mesh(
     hydrogenAtomGeometry,
@@ -36,9 +40,11 @@ const hydrogenAtom4 = new THREE.Mesh(
     hydrogenAtomMaterial,
 );
 
-const bl = 200;
-const bondGeometry = new THREE.CylinderGeometry(10, 10, 200, 32);
-const bondMaterial = new THREE.MeshStandardMaterial({ color: "white" });
+const bl = 175; // bond length, a base for  other sizes and positions
+const bondGeometry = new THREE.CylinderGeometry(10, 10, bl, 32);
+const bondMaterial = new THREE.MeshStandardMaterial({
+    color: THREE.Color.NAMES.white,
+});
 
 const bond1 = new THREE.Mesh(bondGeometry, bondMaterial);
 const bond2 = new THREE.Mesh(bondGeometry, bondMaterial);
@@ -52,31 +58,31 @@ const h2Label = createTextSprite("H2", { scale: spriteScale });
 const h3Label = createTextSprite("H3", { scale: spriteScale });
 const h4Label = createTextSprite("H4", { scale: spriteScale });
 
-carbonAtom.position.set(0, 250, 0);
-carbonLabel.position.set(0, 250, 0);
+carbonAtom.position.set(0, bl * 1.25, 0);
+carbonLabel.position.set(0, bl * 1.25, 0);
 
-hydrogenAtom1.position.set(225, 150, 0);
-h1Label.position.set(225, 150, 0);
+hydrogenAtom1.position.set(bl * 1.125, bl * 0.75, 0);
+h1Label.position.set(bl * 1.125, bl * 0.75, 0);
 
-hydrogenAtom2.position.set(-225, 150, 0);
-h2Label.position.set(-225, 150, 0);
+hydrogenAtom2.position.set(-bl * 1.125, bl * 0.75, 0);
+h2Label.position.set(-bl * 1.125, bl * 0.75, 0);
 
-hydrogenAtom3.position.set(0, 200, 150);
-h3Label.position.set(0, 200, 150);
+hydrogenAtom3.position.set(0, bl, bl * 0.75);
+h3Label.position.set(0, bl, bl * 0.75);
 
-hydrogenAtom4.position.set(0, 325, -175);
-h4Label.position.set(0, 325, -175);
+hydrogenAtom4.position.set(0, bl * 1.625, -bl * 0.875);
+h4Label.position.set(0, bl * 1.625, -bl * 0.875);
 
-bond1.position.set(125, 225, 0);
+bond1.position.set(bl * 0.625, bl * 1.125, 0);
 bond1.rotation.z = Math.PI / 3.55;
 
-bond2.position.set(-125, 225, 0);
+bond2.position.set(-bl * 0.625, bl * 1.125, 0);
 bond2.rotation.z = Math.PI / -3.55;
 
-bond3.position.set(0, 250, 50);
+bond3.position.set(0, bl * 1.25, bl * 0.25);
 bond3.rotation.x = Math.PI / -3;
 
-bond4.position.set(0, 250, -100);
+bond4.position.set(0, bl * 1.25, -bl * 0.5);
 bond4.rotation.x = Math.PI / -3.55;
 
 const planeGeometry = new THREE.PlaneGeometry(100 * 1000, 100 * 1000);
