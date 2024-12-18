@@ -2,15 +2,25 @@ import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
 import { createTextSprite } from "../utils/createTextSprite";
 
-const { render, scene, directionalLight, renderer, canvas, camera } =
-    createBaseScene({
-        sceneTitle: "Unit 5: Methane Molecule",
-        cameraZ: window.innerHeight,
-        cameraFov: 75,
-        defaultLightColor: "#ffffff",
-        showAxes: true,
-        showGrid: false,
-    });
+const {
+    render,
+    scene,
+    directionalLight,
+    renderer,
+    canvas,
+    camera,
+    shouldShowLabels,
+    shouldShowWireframe,
+    sidebar,
+    addHelpNote,
+} = createBaseScene({
+    sceneTitle: "Unit 5: Methane Molecule",
+    cameraZ: window.innerHeight * 20,
+    cameraFov: 90,
+    defaultLightColor: "#ffffff",
+    showAxes: false,
+    showGrid: false,
+});
 
 const bondLength = 200; // bond length, a base for  other sizes and positions
 const carbonRadius = bondLength / 2;
@@ -105,9 +115,10 @@ const planeMaterial = new THREE.MeshStandardMaterial({
 });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = Math.PI / 1.999;
-plane.position.y = 0;
+plane.position.y = -bondLength * 1.7;
 
-scene.add(
+const moleculeGroup = new THREE.Group();
+moleculeGroup.add(
     carbon___Atom,
     hydrogenAtom1,
     hydrogenAtom2,
@@ -122,8 +133,17 @@ scene.add(
     h2Label,
     h3Label,
     h4Label,
-    plane,
 );
+
+const labels = [crLabel, h1Label, h2Label, h3Label, h4Label];
+const materials = [
+    carbonAtomMaterial,
+    hydrogenAtomMaterial,
+    bondMaterial,
+    planeMaterial,
+];
+
+scene.add(moleculeGroup, plane);
 
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -165,8 +185,8 @@ directionalLight.shadow.camera.right = 1000;
 directionalLight.shadow.camera.top = 1000;
 directionalLight.shadow.camera.bottom = -1000;
 
-camera.position.set(500, 500, 500);
-camera.lookAt(new THREE.Vector3(0, 0, 0));
+camera.position.set(300, 1000, 200);
+camera.lookAt(carbon___Atom.position);
 
 // orientation of the bond cylinder
 // the cylinders perpendicular to the sphere's surface and at the center of them
@@ -200,9 +220,125 @@ reOrientBond({ bond: bond2, carbon: carbon___Atom, hydrogen: hydrogenAtom2 });
 reOrientBond({ bond: bond3, carbon: carbon___Atom, hydrogen: hydrogenAtom3 });
 reOrientBond({ bond: bond4, carbon: carbon___Atom, hydrogen: hydrogenAtom4 });
 
+let shouldRotate = true;
+let rotationSpeed = 0.01;
+let rotationAxis = "y";
+let rotationDirection = 1;
+
+const sceneOptionsDiv = document.createElement("div");
+sceneOptionsDiv.classList.add("mb-4");
+
+sceneOptionsDiv.innerHTML = `
+    <hr class="border border-b-[#000] mb-2" />
+    <h2 class="text-xl font-bold text-center mb-2">Scene Options</h2>
+    <div class="flex flex-col space-y-2 text-lg">
+        <div>
+            <input type="checkbox" id="rotate" checked>
+            <label for="rotate" class="font-bold">Rotate</label>
+        </div>
+        <div>
+            <label for="rotationSpeed" class="font-bold">Rotation Speed</label>
+            <input type="range" id="rotationSpeed" min="0" max="0.1" step="0.01" value="0.01">
+        </div>
+        <div>
+            <label for="rotationAxis" class="font-bold">Rotation Axis</label>
+            <select id="rotationAxis" class="min-w-20 ml-2">
+                <option value="x">x</option>
+                <option value="y" selected>y</option>
+                <option value="z">z</option>
+            </select>
+        </div>
+        <div class="">
+            <label for="rotationDirection" class="font-bold">Rotation Direction</label>
+            <select id="rotationDirection">
+                <option value="1">Clockwise</option>
+                <option value="-1">Counter Clockwise</option>
+            </select>
+        </div>
+        <div>
+            <button id="resetRotation" class="bg-blue-500 text-white p-2 rounded-md text-sm">Reset Rotation</button>
+        </div>
+    </div>
+    `;
+
+sidebar.appendChild(sceneOptionsDiv);
+
+const rotateCheckbox = document.getElementById("rotate") as HTMLInputElement;
+const rotationSpeedInput = document.getElementById(
+    "rotationSpeed",
+) as HTMLInputElement;
+const rotationAxisSelect = document.getElementById(
+    "rotationAxis",
+) as HTMLSelectElement;
+const rotationDirectionSelect = document.getElementById(
+    "rotationDirection",
+) as HTMLSelectElement;
+
+rotateCheckbox.checked = shouldRotate;
+rotationSpeedInput.value = rotationSpeed.toString();
+rotationAxisSelect.value = rotationAxis;
+rotationDirectionSelect.value = rotationDirection.toString();
+
+rotateCheckbox.addEventListener("change", () => {
+    shouldRotate = rotateCheckbox.checked;
+});
+
+rotationSpeedInput.addEventListener("input", () => {
+    rotationSpeed = parseFloat(rotationSpeedInput.value);
+});
+
+rotationAxisSelect.addEventListener("change", () => {
+    rotationAxis = rotationAxisSelect.value;
+});
+
+rotationDirectionSelect.addEventListener("change", () => {
+    rotationDirection = parseInt(rotationDirectionSelect.value);
+});
+
+const rotateMolecule = () => {
+    if (shouldRotate) {
+        moleculeGroup.rotation[rotationAxis as "x" | "y" | "z"] +=
+            rotationSpeed * rotationDirection;
+    }
+};
+
+const resetCubeRotation = () => {
+    shouldRotate = false;
+    rotateCheckbox.checked = false;
+    moleculeGroup.rotation.set(0, 0, 0);
+};
+
+const resetRotationButton = document.getElementById(
+    "resetRotation",
+) as HTMLButtonElement;
+resetRotationButton.addEventListener("click", resetCubeRotation);
+
 const animate = () => {
     requestAnimationFrame(animate);
+
+    rotateMolecule();
+
+    labels.forEach((label) => {
+        label.visible = shouldShowLabels();
+    });
+
+    materials.forEach((material) => {
+        material.wireframe = shouldShowWireframe();
+    });
+
     render();
 };
 
 animate();
+
+addHelpNote({
+    title: "Scene Options",
+    description: "These options are specified for this scene:",
+    points: [
+        "Rotate: Start/Stop the rotation of the mesh.",
+        "Rotation Speed: Adjust the speed of rotation. Default is 0.01.",
+        "Rotation Axis: Change the axis of rotation, the shape will rotate around this axis.",
+        "Rotation Direction: Change the direction of rotation. Default is clockwise.",
+        "Reset Rotation: Stop the rotation and reset the shape's rotation to the last state before rotation started.",
+    ],
+});
