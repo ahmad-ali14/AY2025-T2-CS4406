@@ -1,8 +1,14 @@
 import * as THREE from "three";
 
-export const createTextSprite = (message: string | number) => {
+export const createTextSprite = (
+    message: string | number,
+    options?: {
+        scale?: [number, number, number];
+    },
+) => {
+    const scale = options?.scale || [2, 2, 1];
     const canvas = document.createElement("canvas");
-    const size = 256; 
+    const size = 256;
     canvas.width = size;
     canvas.height = size;
     const context = canvas.getContext("2d");
@@ -22,6 +28,7 @@ export const createTextSprite = (message: string | number) => {
 
     // Create texture and sprite material
     const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
     const spriteMaterial = new THREE.SpriteMaterial({
         map: texture,
         depthTest: false, // Ensures the label is always visible
@@ -31,6 +38,10 @@ export const createTextSprite = (message: string | number) => {
     const sprite = new THREE.Sprite(spriteMaterial);
 
     // Scale the sprite appropriately
-    sprite.scale.set(2, 2, 1); // Adjust the scale as needed
+    sprite.scale.set(
+        scale[0] * (size / size),
+        scale[1] * (size / size),
+        scale[2] * (size / size),
+    );
     return sprite;
 };

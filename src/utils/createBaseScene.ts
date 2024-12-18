@@ -38,6 +38,7 @@ type CreateBaseSceneParams = {
     canvasId?: string;
     sceneTitle: string;
     cameraZ?: number;
+    cameraFov?: number;
     showGrid?: boolean;
     showAxes?: boolean;
     useOrbitControls?: boolean;
@@ -53,6 +54,7 @@ const defaultParams: Required<CreateBaseSceneParams> = {
     canvasId: "glcanvas",
     sceneTitle: "Base Scene",
     cameraZ: 200,
+    cameraFov: 45,
     showGrid: true,
     showAxes: true,
     useOrbitControls: true,
@@ -67,7 +69,7 @@ const defaultParams: Required<CreateBaseSceneParams> = {
 export const createBaseScene = (
     params: CreateBaseSceneParams = defaultParams,
 ) => {
-    const { canvasId, cameraZ, sceneTitle, defaultLightColor } =
+    const { canvasId, cameraZ, sceneTitle, defaultLightColor, cameraFov } =
         params as Required<CreateBaseSceneParams>;
     const mainDiv = document.createElement("div");
     mainDiv.classList.add("flex", "h-full", "w-full");
@@ -90,7 +92,12 @@ export const createBaseScene = (
     const canvasAspect = canvas.width / canvas.height;
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(45, canvasAspect, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+        cameraFov,
+        canvasAspect,
+        0.1,
+        cameraZ * 5,
+    );
     camera.position.z = cameraZ;
 
     const ambientLight = new THREE.AmbientLight(defaultLightColor, 1);
@@ -317,6 +324,13 @@ export const createBaseScene = (
     const lightsOptionsDiv = document.createElement("div");
     lightsOptionsDiv.classList.add("mb-4");
 
+    const left = -canvas.width;
+    const top = canvas.height;
+    const right = canvas.width;
+    const bottom = -canvas.height;
+    const back = -cameraZ;
+    const front = cameraZ;
+
     lightsOptionsDiv.innerHTML = `
     <hr class="border border-b-[#000] mb-2" />
     <h2 class="text-xl font-bold text-center mb-2">Lights Options</h2>
@@ -344,8 +358,23 @@ export const createBaseScene = (
        </div>
       <div>
         <label for="directionalLightIntensity" class="font-bold">Directional Light Intensity</label>
-        <input type="range" id="directionalLightIntensity" min="0" max="10" step="0.1" value="1.0">
+        <input type="range" id="directionalLightIntensity" min="0" max="1000" step="0.1" value="1.0">
       </div>
+      <div>
+        <label for="directionalLightPosition" class="font-bold">Directional Light Position</label>
+        <div class="flex items-center space-x-2">
+            <span class="font-bold">X:</span>
+            <input type="range" id="directionalLightPosX" min="${left}" max="${right}" step="0.1" value="1.0">
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="font-bold">Y:</span>
+            <input type="range" id="directionalLightPosY" min="${bottom}" max="${top}" step="0.1" value="1.0">
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="font-bold">Z:</span>
+            <input type="range" id="directionalLightPosZ" min="${back}" max="${front}" step="0.1" value="1.0">
+        </div>
+        </div>
       <div class="border-b"></div>
       <div>
         <input type="checkbox" id="usePointLight" checked>
@@ -401,12 +430,39 @@ export const createBaseScene = (
         "pointLightIntensity",
     ) as HTMLInputElement;
 
+    const directionalLightPosX = document.getElementById(
+        "directionalLightPosX",
+    ) as HTMLInputElement;
+
+    const directionalLightPosY = document.getElementById(
+        "directionalLightPosY",
+    ) as HTMLInputElement;
+
+    const directionalLightPosZ = document.getElementById(
+        "directionalLightPosZ",
+    ) as HTMLInputElement;
+
     useAmbientLight.checked = params.useAmbientLight ?? true;
     useDirectionalLight.checked = params.useDirectionalLight ?? true;
     usePointLight.checked = params.usePointLight ?? true;
     useAmbientLight.value = defaultLightColor as string;
     useDirectionalLight.value = defaultLightColor as string;
     usePointLight.value = defaultLightColor as string;
+    directionalLightPosX.value = directionalLight.position.x.toString();
+    directionalLightPosY.value = directionalLight.position.y.toString();
+    directionalLightPosZ.value = directionalLight.position.z.toString();
+
+    directionalLightPosX.addEventListener("input", () => {
+        directionalLight.position.x = parseFloat(directionalLightPosX.value);
+    });
+
+    directionalLightPosY.addEventListener("input", () => {
+        directionalLight.position.y = parseFloat(directionalLightPosY.value);
+    });
+
+    directionalLightPosZ.addEventListener("input", () => {
+        directionalLight.position.z = parseFloat(directionalLightPosZ.value);
+    });
 
     ambientLightIntensityInput.addEventListener("input", () => {
         scene.traverse((child) => {
