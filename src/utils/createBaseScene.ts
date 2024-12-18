@@ -38,6 +38,7 @@ type CreateBaseSceneParams = {
     canvasId?: string;
     sceneTitle: string;
     cameraZ?: number;
+    cameraFov?: number;
     showGrid?: boolean;
     showAxes?: boolean;
     useOrbitControls?: boolean;
@@ -53,6 +54,7 @@ const defaultParams: Required<CreateBaseSceneParams> = {
     canvasId: "glcanvas",
     sceneTitle: "Base Scene",
     cameraZ: 200,
+    cameraFov: 45,
     showGrid: true,
     showAxes: true,
     useOrbitControls: true,
@@ -67,7 +69,7 @@ const defaultParams: Required<CreateBaseSceneParams> = {
 export const createBaseScene = (
     params: CreateBaseSceneParams = defaultParams,
 ) => {
-    const { canvasId, cameraZ, sceneTitle, defaultLightColor } =
+    const { canvasId, cameraZ, sceneTitle, defaultLightColor, cameraFov } =
         params as Required<CreateBaseSceneParams>;
     const mainDiv = document.createElement("div");
     mainDiv.classList.add("flex", "h-full", "w-full");
@@ -90,7 +92,7 @@ export const createBaseScene = (
     const canvasAspect = canvas.width / canvas.height;
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(45, canvasAspect, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(cameraFov, canvasAspect, 0.1, 1000);
     camera.position.z = cameraZ;
 
     const ambientLight = new THREE.AmbientLight(defaultLightColor, 1);

@@ -5,12 +5,13 @@ import { createTextSprite } from "../utils/createTextSprite";
 const { render, scene } = createBaseScene({
     sceneTitle: "Unit 5: Methane Molecule",
     cameraZ: window.innerHeight,
+    cameraFov: 75,
     defaultLightColor: "#ffffff",
     showAxes: true,
     showGrid: false,
 });
 
-const carbonAtomGeometry = new THREE.SphereGeometry(50, 32, 32);
+const carbonAtomGeometry = new THREE.SphereGeometry(80, 32, 32);
 const carbonAtomMaterial = new THREE.MeshBasicMaterial({ color: "red" });
 const carbonAtom = new THREE.Mesh(carbonAtomGeometry, carbonAtomMaterial);
 
@@ -34,7 +35,7 @@ const hydrogenAtom4 = new THREE.Mesh(
     hydrogenAtomMaterial,
 );
 
-const bondGeometry = new THREE.CylinderGeometry(10, 10, 100, 32);
+const bondGeometry = new THREE.CylinderGeometry(10, 10, 200, 32);
 const bondMaterial = new THREE.MeshBasicMaterial({ color: "white" });
 
 const bond1 = new THREE.Mesh(bondGeometry, bondMaterial);
@@ -52,29 +53,29 @@ const h4Label = createTextSprite("H4", { scale: spriteScale });
 carbonAtom.position.set(0, 250, 0);
 carbonLabel.position.set(0, 250, 0);
 
-hydrogenAtom1.position.set(100, 250, 0);
-h1Label.position.set(100, 250, 0);
+hydrogenAtom1.position.set(225, 150, 0);
+h1Label.position.set(225, 150, 0);
 
-hydrogenAtom2.position.set(-100, 250, 0);
-h2Label.position.set(-100, 250, 0);
+hydrogenAtom2.position.set(-225, 150, 0);
+h2Label.position.set(-225, 150, 0);
 
-hydrogenAtom3.position.set(0, 250, 100);
-h3Label.position.set(0, 250, 100);
+hydrogenAtom3.position.set(0, 200, 150);
+h3Label.position.set(0, 200, 150);
 
-hydrogenAtom4.position.set(0, 250, -100);
-h4Label.position.set(0, 250, -100);
+hydrogenAtom4.position.set(0, 325, -175);
+h4Label.position.set(0, 325, -175);
 
-bond1.position.set(50, 250, 0);
-bond1.rotation.z = Math.PI / 2;
+bond1.position.set(125, 225, 0);
+bond1.rotation.z = Math.PI / 3.55;
 
-bond2.position.set(-50, 250, 0);
-bond2.rotation.z = Math.PI / 2;
+bond2.position.set(-125, 225, 0);
+bond2.rotation.z = Math.PI / -3.55;
 
 bond3.position.set(0, 250, 50);
-bond3.rotation.x = Math.PI / 2;
+bond3.rotation.x = Math.PI / -3;
 
-bond4.position.set(0, 250, -50);
-bond4.rotation.x = Math.PI / 2;
+bond4.position.set(0, 250, -100);
+bond4.rotation.x = Math.PI / -3.55;
 
 scene.add(
     carbonAtom,
