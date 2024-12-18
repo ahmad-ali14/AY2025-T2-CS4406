@@ -30,7 +30,7 @@ const defaultLightsOptionsHelpNote: HelpNote = {
         "Use Directional Light: Toggles the directional light in the scene.",
         "Directional Light Color: Changes the color of the directional light.",
         "Directional Light Intensity: Changes the intensity of the directional light.",
-        "Note: the position of the directional light is not configurable, yet.",
+        "Directional Light Position: use the X,Y,Z sliders to change the position of the directional light.",
     ],
 };
 
