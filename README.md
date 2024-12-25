@@ -23,6 +23,7 @@ Live URL: <https://ahmad-ali14.github.io/AY2025-T2-CS4406/>
 | 3    | [Unit 3 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit3/) | [Unit 3 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit3/code.ts) |                              |
 | 4    | [Unit 4 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit4/) | [Unit 4 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit4/code.ts) | Learning Journal 4.          |
 | 5    | [Unit 5 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit5/) | [Unit 5 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit5/code.ts) |                              |
+| 6    | [Unit 6 demo](https://ahmad-ali14.github.io/AY2025-T2-CS4406/unit6/) | [Unit 6 Source code](https://github.com/ahmad-ali14/AY2025-T2-CS4406/blob/main/src/unit6/code.ts) |                              |
 
 ## Guide
 
