@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
 
 // const n = window.innerHeight * 10;
-const n = 10;
+const n = 1;
+const incr = 0.01;
 // const n = window.innerHeight / 20;
 const worldEdges = {
     x: { min: -n, max: n },
@@ -22,14 +23,15 @@ const {
     ambientLight,
 } = createBaseScene({
     sceneTitle: "Unit 7: Function Graphing",
-    cameraZ: n * 10,
+    cameraZ: n * 5,
     cameraFov: 90,
     defaultLightColor: "#fff",
     showAxes: true,
     showGrid: true,
     useAmbientLight: true,
     usePointLight: false,
-    gridHelperSize: n,
+    gridHelperSize: n * 10,
+    gridHelperDivisions: n * 10 * 10,
 });
 
 const parseFunction = (fn: string): ((x: number, y: number) => number) => {
@@ -40,85 +42,69 @@ const minX = worldEdges.x.min;
 const maxX = worldEdges.x.max;
 const minY = worldEdges.y.min;
 
-const plotFunction = (fnString: string) => {
+const plotFunction1 = (fnString: string) => {
     const fn = parseFunction(fnString);
 
-    for (let x = minX; x <= maxX; x += 1) {
-        for (let y = minY; y <= worldEdges.y.max; y += 1) {
+    console.log("plotting function", fnString);
+    console.log("worldEdges", worldEdges);
+    console.log("fn", fn);
+
+    const vertices = [];
+    const vectors: THREE.Vector3[] = [];
+
+    for (let x = minX; x <= maxX; x += incr) {
+        for (let y = minY; y <= worldEdges.y.max; y += incr) {
             const z = fn(x, y);
-            const v = new THREE.Vector3(x, y, z);
-
-            // add a line to the point
-            const lineMaterial = new THREE.LineBasicMaterial({
-                color: new THREE.Color(`hsl(${z * 10}, 100%, 50%)`),
-            });
-            const points = [];
-            points.push(new THREE.Vector3(x, y, 0));
-            points.push(v);
-            const lineGeometry = new THREE.BufferGeometry().setFromPoints(
-                points,
-            );
-            const line = new THREE.Line(lineGeometry, lineMaterial);
-
-            scene.add(line);
-
-            //    // add a point with the z,y,z
-            //     const geometry = new THREE.SphereGeometry(1, 32, 32);
-            //     const material = new THREE.MeshPhongMaterial({
-            //         color: new THREE.Color(`hsl(${z * 10}, 100%, 50%)`),
-            //         wireframe: shouldShowWireframe(),
-            //     });
-            //     const sphere = new THREE.Mesh(geometry, material);
-            //     sphere.position.set(x, y, z);
-            //     scene.add(sphere);
-
-            // const geometry = new THREE.BoxGeometry(1, 1, z);
-            // const material = new THREE.MeshPhongMaterial({
+            // // add a point with the z,y,z
+            // const geometry1 = new THREE.SphereGeometry(incr * 2, 32, 32);
+            // const material1 = new THREE.MeshPhongMaterial({
             //     color: new THREE.Color(`hsl(${z * 10}, 100%, 50%)`),
             //     wireframe: shouldShowWireframe(),
             // });
-            // const cube = new THREE.Mesh(geometry, material);
-            // cube.position.set(x, y, z / 2);
-            // scene.add(cube);
-        }
-    }
-
-    // let's interpolate the space between the points and fil it with colors
-    const geometry = new THREE.BufferGeometry();
-    const vertices = [];
-    const colors = [] as THREE.Color[];
-    for (let x = minX; x < maxX; x += 1) {
-        for (let y = minY; y < worldEdges.y.max; y += 1) {
-            const z = fn(x, y);
+            // const sphere = new THREE.Mesh(geometry1, material1);
+            // sphere.position.set(x, y, z);
+            // scene.add(sphere);
             vertices.push(x, y, z);
-            colors.push(new THREE.Color(`hsl(${z * 10}, 100%, 50%)`));
+            vectors.push(new THREE.Vector3(x, y, z));
         }
     }
 
-    geometry.setAttribute(
-        "position",
-        new THREE.Float32BufferAttribute(vertices, 3),
-    );
-    geometry.setAttribute(
-        "color",
-        new THREE.Float32BufferAttribute(colors as any[], 3),
-    );
+    const geometry = new THREE.BufferGeometry();
 
-    const material = new THREE.PointsMaterial({
-        size: 0.1,
-        vertexColors: true,
+    // geometry.setAttribute(
+    //     "position",
+    //     new THREE.Float32BufferAttribute(vertices, 3),
+    // );
+    geometry.setFromPoints(vectors);
+
+    const material = new THREE.MeshBasicMaterial({
+        color: 0xff0000,
+        wireframe: false,
     });
-    const points = new THREE.Points(geometry, material);
-    scene.add(points);
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
 };
+
+const planeGeometry = new THREE.PlaneGeometry(n * 10, n * 10, 10, 10);
+const planeMaterial = new THREE.MeshBasicMaterial({
+    color: 0x00ff00,
+    side: THREE.DoubleSide,
+    wireframe: false,
+});
+
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.rotation.x = Math.PI / 2;
+plane.position.y = -n;
+scene.add(plane);
 
 let functionChanged = true;
 
 const animate = () => {
     requestAnimationFrame(animate);
     if (functionChanged) {
-        const fnString = `z=x^2+y^2`;
-        plotFunction(fnString);
+        const fnString = `x**2+y**2`;
+        plotFunction1(fnString);
         functionChanged = false;
     }
 
