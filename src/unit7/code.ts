@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { createBaseScene } from "../utils/createBaseScene";
 import { createTextSprite } from "../utils/createTextSprite";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry.js";
+
 let n = 1;
 let incr = 0.01;
 
@@ -9,13 +10,8 @@ const {
     camera,
     render,
     scene,
-    directionalLight,
-    renderer,
-    canvas,
     shouldShowWireframe,
     sidebar,
-    addHelpNote,
-    ambientLight,
     shouldShowLabels,
 } = createBaseScene({
     sceneTitle: "Unit 7: Function Graphing",
@@ -28,14 +24,32 @@ const {
     usePointLight: false,
     gridHelperSize: n * 10,
     gridHelperDivisions: n * 10 * 10,
-    showWireframe: true,
+    showWireframe: false,
 });
 
-const parseFunction = (fn: string): ((x: number, y: number) => number) => {
+type ParsedFn = (x: number, y: number) => number;
+
+const parseFunction = (fn: string): ParsedFn => {
     return new Function("x", "y", `return ${fn}`) as any;
 };
 
+const generateParametricFunction = (fn: ParsedFn) => {
+    const parametricFunction = (
+        u: number,
+        v: number,
+        target: THREE.Vector3,
+    ) => {
+        const x = (u - 0.5) * 2 * n; // Map u from [0, 1] to [-n, n]
+        const y = (v - 0.5) * 2 * n; // Map v from [0, 1] to [-n, n]
+        const z = fn(x, y);
+        target.set(x, y, z);
+    };
+    return parametricFunction;
+};
+
 const planeSize = (n: number) => n * 100;
+const getCurveSegments = (n: number, incr: number) =>
+    Math.max(10, Math.floor((2 * n) / incr));
 
 const planeGeometry = new THREE.PlaneGeometry(
     planeSize(n),
@@ -52,16 +66,15 @@ const planeMaterial = new THREE.MeshBasicMaterial({
 
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = Math.PI / 2;
-plane.position.y = -n * 2;
+plane.position.y = -n * 20;
 scene.add(plane);
 
 const curveGeometry = new THREE.BufferGeometry();
-// const curveGeometry = new THREE.PlaneGeometry(2 * n, 2 * n);
 const curveMaterial = new THREE.MeshStandardMaterial({
-    vertexColors: true, // Enable vertex colors
     side: THREE.DoubleSide,
-    // transparent: true,
+    flatShading: false, // Smooth surface appearance
     wireframe: shouldShowWireframe(),
+    vertexColors: true, // Enable vertex colors
 });
 const curve = new THREE.Mesh(curveGeometry, curveMaterial);
 scene.add(curve);
@@ -74,85 +87,33 @@ const plotFunction = (fnString: string) => {
         return;
     }
 
-    // clean up the previous vectors
-    // curve.geometry.dispose();
-    curve.geometry = new THREE.BufferGeometry();
-    // curve.geometry = new THREE.PlaneGeometry(2 * n, 2 * n);
+    const parametricGeometry = new ParametricGeometry(
+        generateParametricFunction(fn),
+        getCurveSegments(n, incr),
+        getCurveSegments(n, incr),
+    );
 
-    const vectors: THREE.Vector3[] = [];
-    const vertices: number[] = [];
+    // Generate vertex colors based on position
+    const positions = parametricGeometry.getAttribute("position").array;
     const colors: number[] = [];
-    const indices: number[] = [];
-    const positions: number[] = [];
 
-    const minX = -n;
-    const maxX = n;
-    const minY = -n;
-    const maxY = n;
+    for (let i = 0; i < positions.length; i += 3) {
+        const x = positions[i]!;
+        const y = positions[i + 1]!;
+        const z = positions[i + 2]!;
 
-    for (let x = minX; x <= maxX; x += incr) {
-        for (let y = minY; y <= maxY; y += incr) {
-            const z = fn(x, y);
+        // Normalize coordinates to [0, 1] for RGB mapping
+        const r = (x + n) / (2 * n);
+        const g = (y + n) / (2 * n);
+        const b = (z + n) / (2 * n);
 
-            vectors.push(new THREE.Vector3(x, y, z));
-            vertices.push(x, y, z);
-            colors.push((x + 1) / 2, (y + 1) / 2, (z + 1) / 2); // RGB gradient
-
-            const a = x * (maxY + 1) + y;
-            const b = x * (maxY + 1) + (y + 1);
-            const c = (x + 1) * (maxY + 1) + y;
-            const d = (x + 1) * (maxY + 1) + (y + 1);
-
-            // First triangle
-            indices.push(a, b, d);
-            // Second triangle
-            indices.push(a, d, c);
-
-            positions.push(x, y, z);
-        }
+        colors.push(r, g, b);
     }
 
-    // curve.geometry.setAttribute(
-    //     "position",
-    //     new THREE.Float32BufferAttribute(vertices, 3),
-    // );
-
-    // curve.geometry.setAttribute(
-    //     "color",
-    //     new THREE.Float32BufferAttribute(colors, 3),
-    // );
-
-    // curve.geometry.setFromPoints(vectors);
-    // curve.geometry.computeVertexNormals();
-    // // curve.geometry.setIndex(indices);
-
-    // const positionRef = curve.geometry.getAttribute("position")
-    //     .array as Float32Array;
-
-    // for (let i = 0; i < vertices.length; i += 3) {
-    //     positionRef[i] = vertices[i]!;
-    //     positionRef[i + 1] = vertices[i + 1]!;
-    //     positionRef[i + 2] = vertices[i + 2]!;
-    // }
-
-    const parametricFunction = (
-        u: number,
-        v: number,
-        target: THREE.Vector3,
-    ) => {
-        const x = (u - 0.5) * 2 * n; // Map u from [0, 1] to [-n, n]
-        const y = (v - 0.5) * 2 * n; // Map v from [0, 1] to [-n, n]
-        const z = fn(x, y);
-        target.set(x, y, z);
-    };
-
-    const segments = Math.max(10, Math.floor((2 * n) / incr));
-
-    // Create the parametric geometry
-    const parametricGeometry = new ParametricGeometry(
-        parametricFunction,
-        segments,
-        segments,
+    // Assign the color attribute to the geometry
+    parametricGeometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(colors, 3), // RGB colors
     );
 
     curve.geometry.dispose();
@@ -168,21 +129,18 @@ const plotFunction = (fnString: string) => {
 
 const defaultFunctions = [
     {
-        name: "First",
-        fn: `((x * x) - (y * y))`,
-    },
-    {
-        name: "Simple Parabola",
-        fn: `x ** 2 + y ** 2`, // A paraboloid (bowl shape).
-    },
-    {
-        name: "Parabola",
-        fn: `3 * x ** 2 + 3 * y ** 2`, // A scaled paraboloid.
-    },
-    {
         name: "Hyperbolic Paraboloid",
         fn: `x ** 2 - y ** 2`, // Saddle-shaped hyperbolic paraboloid.
     },
+    {
+        name: "Parabola",
+        fn: `x ** 2 + y ** 2`, // A paraboloid (bowl shape).
+    },
+    {
+        name: "Deep Parabola",
+        fn: `3 * x ** 2 + 3 * y ** 2`, // A scaled paraboloid.
+    },
+
     {
         name: "Cone",
         fn: `Math.sqrt(x ** 2 + y ** 2)`, // A cone with the vertex at (0, 0, 0).
