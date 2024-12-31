@@ -3,7 +3,18 @@ import { createBaseScene } from "../utils/createBaseScene";
 import { createTextSprite } from "../utils/createTextSprite";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry.js";
 
+/**
+ * // n is used to control maxX, minX, maxY, minY values for the loop
+ * Higher values makes the curve larger.
+ * Good range is [1, 3]
+ */
 let n = 1;
+/**
+ *  // increment value for the loop (within plotFunction).
+ * Higher values makes the curve more coarse.
+ * Smaller values makes the curve more fine.
+ * Good range is [0.01, 1]
+ */
 let incr = 0.01;
 
 const {
@@ -13,6 +24,10 @@ const {
     shouldShowWireframe,
     sidebar,
     shouldShowLabels,
+    renderer,
+    directionalLight,
+    canvas,
+    addHelpNote,
 } = createBaseScene({
     sceneTitle: "Unit 7: Function Graphing",
     cameraZ: n * 15,
@@ -27,12 +42,31 @@ const {
     showWireframe: false,
 });
 
+// for easy access to the edges of the scene
+const sceneEdges = {
+    top: canvas.height / 2,
+    bottom: -canvas.height / 2,
+    left: -canvas.width / 2,
+    right: canvas.width / 2,
+};
+
+// this is the signature of the function which will be used to compute the z value
 type ParsedFn = (x: number, y: number) => number;
 
+/**
+ * Takes a string representing the math operation to compute z value
+ * and returns a function that can be used to compute the z value.
+ * The function string comes from the user input, and will be parsed to a function definition.
+ * see `defaultFunctions` for examples of a few predefined functions.
+ */
 const parseFunction = (fn: string): ParsedFn => {
     return new Function("x", "y", `return ${fn}`) as any;
 };
 
+/**
+ * Generates a parametric function based on the parsed function.
+ * This function will be used to generate the geometry of the curve.
+ */
 const generateParametricFunction = (fn: ParsedFn) => {
     const parametricFunction = (
         u: number,
@@ -47,48 +81,68 @@ const generateParametricFunction = (fn: ParsedFn) => {
     return parametricFunction;
 };
 
-const planeSize = (n: number) => n * 100;
+//computes the size of the ground plane, to stay scaled with the curve
+const groundSize = (n: number) => n * 100;
+
+//computes the number of segments for the curve
 const getCurveSegments = (n: number, incr: number) =>
     Math.max(10, Math.floor((2 * n) / incr));
 
-const planeGeometry = new THREE.PlaneGeometry(
-    planeSize(n),
-    planeSize(n),
+/**
+ * Configure the ground plane.
+ * - Assemble the geometry and material.
+ * - Add the ground to the scene.
+ * - Set the position and rotation to be prendicular to the curve.
+ */
+const groundGeometry = new THREE.PlaneGeometry(
+    groundSize(n),
+    groundSize(n),
     10,
     10,
 );
-const planeMaterial = new THREE.MeshBasicMaterial({
+const groundMaterial = new THREE.MeshStandardMaterial({
     color: "#84bbfa",
     side: THREE.DoubleSide,
     wireframe: false,
     opacity: 0.5,
 });
 
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.rotation.x = Math.PI / 2;
-plane.position.y = -n * 20;
-scene.add(plane);
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = Math.PI / 2;
+ground.position.y = -n * 5;
+scene.add(ground);
 
+/**
+ * Setup the curve.
+ * - Assemble the geometry and material.
+ * - Add the curve to the scene.
+ */
 const curveGeometry = new THREE.BufferGeometry();
 const curveMaterial = new THREE.MeshStandardMaterial({
     side: THREE.DoubleSide,
     flatShading: false, // Smooth surface appearance
     wireframe: shouldShowWireframe(),
-    vertexColors: true, // Enable vertex colors
+    vertexColors: true, // Enable vertex colors,
 });
 const curve = new THREE.Mesh(curveGeometry, curveMaterial);
 scene.add(curve);
 
+/**
+ * This where the actual curve is drawn. It edits the geometry of the curve.
+ * It accepts a string representing the function to plot, parse it, and use it to compute z values.
+ */
 const plotFunction = (fnString: string) => {
     const fn = parseFunction(fnString);
 
+    // guard against 0 values as they cause infinite loops
     if (!n || !incr) {
         alert("Please set N and Increment values.");
         return;
     }
 
+    // setup a new parametric geometry
     const parametricGeometry = new ParametricGeometry(
-        generateParametricFunction(fn),
+        generateParametricFunction(fn), // Parametric function is generated based on the parsed function
         getCurveSegments(n, incr),
         getCurveSegments(n, incr),
     );
@@ -97,6 +151,11 @@ const plotFunction = (fnString: string) => {
     const positions = parametricGeometry.getAttribute("position").array;
     const colors: number[] = [];
 
+    /**
+     * For each vertex,
+     * - Push three values into `positions` array representing (x, y, z) coordinates.
+     * - Push three values into `colors` array representing (r, g, b) values based on the (x, y, z) coordinates.
+     */
     for (let i = 0; i < positions.length; i += 3) {
         const x = positions[i]!;
         const y = positions[i + 1]!;
@@ -116,17 +175,51 @@ const plotFunction = (fnString: string) => {
         new THREE.Float32BufferAttribute(colors, 3), // RGB colors
     );
 
-    curve.geometry.dispose();
-    curve.geometry = parametricGeometry;
+    curve.geometry.dispose(); // free up memory of the previous geometry
+    curve.geometry = parametricGeometry; // assign the edited geometry to the curve
 
-    plane.geometry = new THREE.PlaneGeometry(
-        planeSize(n),
-        planeSize(n),
+    // ensure that the ground plane is scaled with the curve
+    ground.geometry = new THREE.PlaneGeometry(
+        groundSize(n),
+        groundSize(n),
         10,
         10,
     );
 };
 
+/**
+ * Handling shadows:
+ * - configure necessary objects to cast and receive shadows.
+ * - configure the directional light position and other properties.
+ * - set the light source at the top right corner of the canvas.
+ * - configure the shadow camera properties.
+ */
+directionalLight.position.set(sceneEdges.right, sceneEdges.top, 0);
+directionalLight.intensity = 2;
+
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+curve.castShadow = true;
+curve.receiveShadow = false;
+
+ground.castShadow = false;
+ground.receiveShadow = true;
+
+// shadow camera properties
+const dlCameraFactor = 2000;
+directionalLight.castShadow = true;
+directionalLight.shadow.camera.near = dlCameraFactor * 0;
+directionalLight.shadow.camera.far = dlCameraFactor;
+directionalLight.shadow.camera.left = -dlCameraFactor;
+directionalLight.shadow.camera.right = dlCameraFactor;
+directionalLight.shadow.camera.top = dlCameraFactor;
+directionalLight.shadow.camera.bottom = -dlCameraFactor;
+
+/**
+ * These are the default functions that the user can choose from.
+ * They will be used to power the user input.
+ */
 const defaultFunctions = [
     {
         name: "Hyperbolic Paraboloid",
@@ -147,9 +240,24 @@ const defaultFunctions = [
     },
 ] as const;
 
+/**
+ * A variable that is used to track if the function has changed.
+ * If it is set to true the `plotFunction` is called in the next frame.
+ * It is set to true when the user changes the function,
+ *    and then set to false after the function is plotted.
+ */
 let functionChanged = true;
 let fnString = defaultFunctions[0].fn as string;
 
+/**
+ * Scene options and necessary listeners and UI elements.
+ * - Select Function: Choose from the predefined functions to plot.
+ * - Custom Function: Enter a custom function to plot. Use Javascript notation.
+ * - N: Set minX, maxX, minY, maxY values for the function.
+ * - Incr: Set the increment value for the loop.
+ * - Ground Color: Set the color of the ground plane.
+ * - Ground Y: Set the Y position of the ground plane.
+ */
 const sceneOptionsDiv = document.createElement("div");
 sceneOptionsDiv.classList.add("mb-4");
 
@@ -197,6 +305,14 @@ sceneOptionsDiv.innerHTML = `
             <span class="font-bold">Incr:</span>
             <input type="range" id="incrInput" min="${0.01}" max="${1}" step="0.01" value="${incr}" />
         </div>
+        <div class="flex flex items-center space-x-2">
+           <label for="groundColor" class="font-bold">Ground Color:</label>
+            <input type="color" id="groundColor" value="#84bbfa" />
+        </div>
+        <div class="flex items-center space-x-2">
+            <label for="groundY" class="font-bold">Ground Y:</label>
+            <input type="range" id="groundY" min="-30" max="0" step="0.1" value="0" />
+        </div>
     </div>
     `;
 
@@ -211,10 +327,16 @@ const plotFunctionButton = document.querySelector(
 ) as HTMLButtonElement;
 const nInput = document.querySelector("#nInput") as HTMLInputElement;
 const incrInput = document.querySelector("#incrInput") as HTMLInputElement;
+const groundColorInput = document.querySelector(
+    "#groundColor",
+) as HTMLInputElement;
+const groundYInput = document.querySelector("#groundY") as HTMLInputElement;
 
 customFunctionInput.value = fnString;
 incrInput.value = incr.toString();
 nInput.value = n.toString();
+groundColorInput.value = "#" + groundMaterial.color.getHexString().toString();
+groundYInput.value = ground.position.y.toString();
 
 functionRadios.forEach((radio) => {
     radio.addEventListener("change", (e) => {
@@ -229,6 +351,11 @@ functionRadios.forEach((radio) => {
 plotFunctionButton.addEventListener("click", () => {
     fnString = customFunctionInput.value;
     functionChanged = true;
+    // unchecked all radio buttons
+    functionRadios.forEach((r) => {
+        const v = r.getAttribute("value");
+        (r as HTMLInputElement).checked = v === fnString;
+    });
 });
 
 nInput.addEventListener("input", (e) => {
@@ -243,10 +370,26 @@ incrInput.addEventListener("input", (e) => {
     functionChanged = true;
 });
 
-camera.position.set(n * 5, n * 5, n * 5);
+groundColorInput.addEventListener("input", (e) => {
+    const color = (e.target as HTMLInputElement).value;
+    groundMaterial.color.set(color);
+});
+
+groundYInput.addEventListener("input", (e) => {
+    const y = parseFloat((e.target as HTMLInputElement).value);
+    ground.position.y = y;
+});
+
+camera.position.set(n * 4, n * 4, n * 4);
 camera.lookAt(0, 0, 0);
 
-const edge = 4;
+const edge = 3;
+
+/**
+ * Add some directional labels to the scene
+ * - X, Y, Z labels at the edges of the scene.
+ * - Labels for the first few integers on each axis.
+ */
 
 const createAxisLabels = (
     axis: "x" | "y" | "z",
@@ -274,6 +417,13 @@ const labels = [
 
 labels.forEach((l) => scene.add(l));
 
+/**
+ * Animation loop
+ * - Animate the scene.
+ * - Update the materials and labels based on the user's choice.
+ * - If the function has changed, plot the new function, and set the flag to false.
+ */
+
 const animate = () => {
     if (functionChanged) {
         plotFunction(fnString);
@@ -296,3 +446,17 @@ const animate = () => {
 };
 
 animate();
+
+// help note: accessed  from the UI through the `Help` button.
+addHelpNote({
+    title: "Scene Options",
+    description: "These options are specified for this scene:",
+    points: [
+        "Select Function: Choose from the predefined functions to plot.",
+        "Custom Function: Enter a custom function to plot. Use Javascript notation.",
+        `N: Set minX, maxX, minY, maxY values for the function. Default is ${n}.`,
+        `Incr: Set the increment value for the loop. Default is ${incr}.`,
+        `Ground Color: Set the color of the ground plane. Default is ${groundColorInput.value}.`,
+        `Ground Y: Set the Y position of the ground plane. Default is ${ground.position.y}.`,
+    ],
+});
