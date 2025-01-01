@@ -48,6 +48,8 @@ type CreateBaseSceneParams = {
     useDirectionalLight?: boolean;
     usePointLight?: boolean;
     defaultLightColor?: string;
+    gridHelperSize?: number;
+    gridHelperDivisions?: number;
 };
 
 const defaultParams: Required<CreateBaseSceneParams> = {
@@ -64,13 +66,22 @@ const defaultParams: Required<CreateBaseSceneParams> = {
     useDirectionalLight: true,
     usePointLight: true,
     defaultLightColor: "#ffffff",
+    gridHelperSize: 1000,
+    gridHelperDivisions: 1000,
 };
 
 export const createBaseScene = (
     params: CreateBaseSceneParams = defaultParams,
 ) => {
-    const { canvasId, cameraZ, sceneTitle, defaultLightColor, cameraFov } =
-        params as Required<CreateBaseSceneParams>;
+    const {
+        canvasId,
+        cameraZ,
+        sceneTitle,
+        defaultLightColor,
+        cameraFov,
+        gridHelperSize,
+        gridHelperDivisions,
+    } = params as Required<CreateBaseSceneParams>;
     const mainDiv = document.createElement("div");
     mainDiv.classList.add("flex", "h-full", "w-full");
     document.body.appendChild(mainDiv);
@@ -145,7 +156,10 @@ export const createBaseScene = (
     let shouldShowLabels = params.showLabels ?? true;
 
     // Add a grid to the scene
-    const gridHelper = new THREE.GridHelper(1000, 1000);
+    const gridHelper = new THREE.GridHelper(
+        gridHelperSize,
+        gridHelperDivisions,
+    );
     gridHelper.position.set(0, 0, 0);
     gridHelper.material.opacity = 0.25;
     gridHelper.visible = shouldShowGrid;
